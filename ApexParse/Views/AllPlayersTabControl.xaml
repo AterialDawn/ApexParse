@@ -1,0 +1,41 @@
+﻿<UserControl x:Class="ApexParse.Views.AllPlayersTabControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ApexParse.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="650">
+    <DockPanel>
+        <DataGrid 
+            x:Name="UsersDataGrid" 
+            ItemsSource="{Binding AllPlayersView}" 
+            AutoGenerateColumns="False"
+            IsReadOnly="True"
+            Background="#30000000"
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+            ScrollViewer.VerticalScrollBarVisibility="Disabled"
+            ColumnHeaderStyle="{StaticResource TransparentColumnHeaderMetro}">
+            <DataGrid.InputBindings>
+                <MouseBinding Gesture="LeftDoubleClick" Command="{Binding UserDoubleClickedCommand}" CommandParameter="{Binding ElementName=UsersDataGrid, Path=SelectedItem}" />
+            </DataGrid.InputBindings>
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Style.Setters>
+                        <Setter Property="Background" Value="{Binding BackgroundBrush}"></Setter>
+                    </Style.Setters>
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Width="2*" Header="Name" Binding="{Binding Name}" ElementStyle="{StaticResource LeftAlignedTextBlock}" />
+                <DataGridTextColumn Width=".6*" Header="%" Binding="{Binding TotalDamagePercent}" ElementStyle="{StaticResource RightAlignedTextBlock}" />
+                <DataGridTextColumn Width=".9*" Header="Damage" Binding="{Binding TotalDamageDealt}" ElementStyle="{StaticResource RightAlignedTextBlock}" />
+                <DataGridTextColumn Width=".9*" Header="Taken" Binding="{Binding TotalDamageTaken}" ElementStyle="{StaticResource RightAlignedTextBlock}" />
+                <DataGridTextColumn Width=".9*" Header="DPS" Binding="{Binding TotalDPS}" ElementStyle="{StaticResource RightAlignedTextBlock}" />
+                <DataGridTextColumn Width=".6*" Header="JA %" Binding="{Binding JustAttackPercent}" ElementStyle="{StaticResource RightAlignedTextBlock}" />
+                <DataGridTextColumn Width=".6*" Header="Crit %" Binding="{Binding CritPercent}" ElementStyle="{StaticResource RightAlignedTextBlock}" />
+                <DataGridTextColumn Width="3*" Header="Max Hit" Binding="{Binding MaxHitInfo}" ElementStyle="{StaticResource CenterAlignedTextBlock}" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

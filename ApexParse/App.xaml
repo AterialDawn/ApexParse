@@ -1,0 +1,46 @@
+﻿<Application x:Class="ApexParse.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:ApexParse"
+             xmlns:VM="clr-namespace:ApexParse.ViewModel"
+             xmlns:V="clr-namespace:ApexParse.Views">
+    <Application.Resources>
+        <ResourceDictionary>
+            <DataTemplate DataType="{x:Type VM:GraphPlayerTabVM}">
+                <V:PlayerGraphDisplayTabControl />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type VM:AllPlayersTabViewModel}">
+                <V:AllPlayersTabControl />
+            </DataTemplate>
+            <Style BasedOn="{StaticResource MetroDataGridColumnHeader}" TargetType="DataGridColumnHeader" x:Key="TransparentColumnHeaderMetro">
+                <Setter Property="FontSize" Value="9" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="Padding" Value="0 -4 0 0" />
+                <Setter Property="Height" Value="20" />
+                <Setter Property="MinHeight" Value="20" />
+                <Setter Property="Background" Value="Transparent" />
+            </Style>
+
+            <Style TargetType="TextBlock" x:Key="LeftAlignedTextBlock">
+                <Setter Property="HorizontalAlignment" Value="Left"></Setter>
+            </Style>
+            <Style TargetType="TextBlock" x:Key="RightAlignedTextBlock">
+                <Setter Property="HorizontalAlignment" Value="Right"></Setter>
+            </Style>
+            <Style TargetType="TextBlock" x:Key="CenterAlignedTextBlock">
+                <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+            </Style>
+
+            <ResourceDictionary.MergedDictionaries>
+                <!-- MahApps.Metro resource dictionaries. Make sure that all file names are Case Sensitive! -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Colors.xaml" />
+                <!-- Accent and AppTheme setting -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/Purple.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseDark.xaml" />
+                <ResourceDictionary Source="Resources/Resources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
