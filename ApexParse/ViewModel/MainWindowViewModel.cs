@@ -277,7 +277,7 @@ namespace ApexParse.ViewModel
 
         private void openSessionLogsFolder()
         {
-            DateTime logTime = CurrentDamageParser.LogStartTime;
+            DateTime logTime = DateTime.Now;
             string dateString = UtilityMethods.ReplaceInvalidCharactersInPath($"{logTime:yyyy\\-MM\\-dd}");
             string destinationFolder = Path.Combine("Saved Sessions", dateString);
             if (!Directory.Exists(destinationFolder))
