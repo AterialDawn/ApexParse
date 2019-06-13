@@ -10,11 +10,21 @@
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         mc:Ignorable="d"
         x:ClassModifier="internal"
+        Style="{DynamicResource MetroWindowBorderStyle}"
         Title="ApexParse" Height="{Binding SettingsVM.Height,Mode=TwoWay,FallbackValue=390}" Width="{Binding SettingsVM.Width,Mode=TwoWay,FallbackValue=850}" SaveWindowPosition="True" ShowMaxRestoreButton="False" TitlebarHeight="20" AllowsTransparency="True" Opacity="{Binding SettingsVM.WindowOpacity}">
     <i:Interaction.Behaviors>
         <Behaviors:WindowTopmostBehavior StayTopmost="{Binding SettingsVM.WindowTopmost}" />
+        <Behaviors:RenderElementToPathBehavior DestinationPath="{Binding SaveToImagePath}" SaveNow="{Binding RenderNow}" />
     </i:Interaction.Behaviors>
     <Window.Resources>
+        <Style x:Key="MetroWindowBorderStyle" TargetType="{x:Type MW:MetroWindow}">
+            <Setter Property="BorderThickness" Value="1" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SettingsVM.HideBorder}" Value="True">
+                    <Setter Property="BorderThickness" Value="0" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
         <Style x:Key="MenuCommandStyle" TargetType="MenuItem">
             <Setter Property="Margin"
                     Value="0,0,0,0"></Setter>
@@ -33,6 +43,7 @@
                         <MenuItem Header="Reset Parser" Command="{Binding ResetTrackerCommand}" />
                         <MenuItem Header="Reselect damagelogs folder" Command="{Binding ReselectDamageLogsCommand}"/>
                         <Separator />
+                        <MenuItem Header="Open Session Logs Folder" Command="{Binding OpenSessionLogsCommand}" />
                         <MenuItem Header="Sessions..." ItemsSource="{Binding SavedSessions}" IsEnabled="{Binding HasSessions}">
                             <MenuItem.ItemTemplate>
                                 <DataTemplate>
@@ -45,6 +56,8 @@
                                 </Style>
                             </MenuItem.ItemContainerStyle>
                         </MenuItem>
+                        <Separator />
+                        <MenuItem Header="Exit" Command="{Binding ExitCommand}" />
                     </ContextMenu>
                 </Button.ContextMenu>
                 <TextBlock>File</TextBlock>
@@ -61,6 +74,7 @@
                         <MenuItem Header="Shorten DPS Readouts" IsCheckable="True" IsChecked="{Binding ShortenDPSReadout}" IsEnabled="{Binding IsParsingInactive}"/>
                         <MenuItem Header="Auto Open Player Tab for Self" IsCheckable="True" IsChecked="{Binding OpenGraphForSelfAutomatically}" IsEnabled="{Binding IsParsingInactive}" />
                         <MenuItem Header="Show Graph" IsCheckable="True" IsChecked="{Binding SettingsVM.ChartVisibility, Converter={StaticResource BoolToVisConvert}}" />
+                        <MenuItem Header="Save Session to JPG" IsCheckable="True" IsChecked="{Binding SettingsVM.RenderWindow}" />
                         <MenuItem Header="Visible Lines...">
                             <MenuItem Header="Total Damage Dealt" IsCheckable="True" IsChecked="{Binding LineSeriesSettings.TotalDamageEnabled}" />
                             <MenuItem Header="Total Damage Taken" IsCheckable="True" IsChecked="{Binding LineSeriesSettings.TakenDamageEnabled}" />
@@ -68,17 +82,27 @@
                             <MenuItem Header="Instance DPS" IsCheckable="True" IsChecked="{Binding LineSeriesSettings.InstanceDPSEnabled}" />
                             <MenuItem Header="MPA Average" IsCheckable="True" IsChecked="{Binding LineSeriesSettings.MPAAverageEnabled}" />
                         </MenuItem>
-                        <Separator />
+                    </ContextMenu>
+                </Button.ContextMenu>
+                <TextBlock>Parser</TextBlock>
+            </Button>
+            <Button HorizontalAlignment="Left">
+                <i:Interaction.Behaviors>
+                    <Behaviors:ContextMenuOnLeftClickBehavior />
+                </i:Interaction.Behaviors>
+                <Button.ContextMenu>
+                    <ContextMenu>
                         <MenuItem Header="Set Custom Accent Color" Command="{Binding SetAccentColorCommand}" IsEnabled="{Binding IsParsingInactive}"/>
                         <MenuItem Header="Set Background Image" Command="{Binding SetBackgroundImageCommand}" IsEnabled="{Binding IsParsingInactive}"/>
                         <MenuItem Header="Always on top" IsCheckable="True" IsChecked="{Binding SettingsVM.WindowTopmost}" />
                         <MenuItem Header="Software Rendering" IsCheckable="True" IsChecked="{Binding SettingsVM.SoftwareRenderingEnabled}" />
+                        <MenuItem Header="Hide Border" IsCheckable="True" IsChecked="{Binding SettingsVM.HideBorder}" />
                         <MenuItem Header="Window Opacity...">
-                            <MenuItem Header="20%" Command="{Binding SetWindowTransparencyCommand}" CommandParameter=".2" />
-                            <MenuItem Header="40%" Command="{Binding SetWindowTransparencyCommand}" CommandParameter=".4" />
-                            <MenuItem Header="60%" Command="{Binding SetWindowTransparencyCommand}" CommandParameter=".6" />
-                            <MenuItem Header="80%" Command="{Binding SetWindowTransparencyCommand}" CommandParameter=".8" />
-                            <MenuItem Header="100%" Command="{Binding SetWindowTransparencyCommand}" CommandParameter="1" />
+                            <MenuItem Header="20%" IsCheckable="True" IsChecked="{Binding OpacityVM.WindowTransparency20Percent}" />
+                            <MenuItem Header="40%" IsCheckable="True" IsChecked="{Binding OpacityVM.WindowTransparency40Percent}" />
+                            <MenuItem Header="60%" IsCheckable="True" IsChecked="{Binding OpacityVM.WindowTransparency60Percent}" />
+                            <MenuItem Header="80%" IsCheckable="True" IsChecked="{Binding OpacityVM.WindowTransparency80Percent}" />
+                            <MenuItem Header="100%" IsCheckable="True" IsChecked="{Binding OpacityVM.WindowTransparency100Percent}" />
                         </MenuItem>
                         <MenuItem Header="Detailed Damage Info...">
                             <MenuItem Header="Enabled" IsCheckable="True" IsChecked="{Binding SettingsVM.EnableDetailedDamageInfo}"></MenuItem>
@@ -94,7 +118,7 @@
                         </MenuItem>
                     </ContextMenu>
                 </Button.ContextMenu>
-                <TextBlock>Options</TextBlock>
+                <TextBlock>Window</TextBlock>
             </Button>
         </MW:WindowCommands>
     </MW:MetroWindow.LeftWindowCommands>
@@ -104,8 +128,7 @@
             <RowDefinition></RowDefinition>
             <RowDefinition Height="20"></RowDefinition>
         </Grid.RowDefinitions>
-        <Image Grid.Row="0" Source="{Binding BackgroundImagePath}" IsEnabled="{Binding HasBackgroundImage}" Stretch="Fill" RenderOptions.BitmapScalingMode="HighQuality">
-        </Image>
+        <Image Grid.Row="0" Source="{Binding BackgroundImagePath}" IsEnabled="{Binding HasBackgroundImage}" Stretch="Fill" RenderOptions.BitmapScalingMode="HighQuality" />
         <Grid Grid.Row="0">
             <TabControl ItemsSource="{Binding AllTabs}" SelectedItem="{Binding SelectedTab, Mode=TwoWay}" Background="#30000000" Padding="0">
                 <TabControl.Resources>

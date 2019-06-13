@@ -257,8 +257,18 @@ namespace ApexParse
 
             internal void WriteSummaryToStringBuilder(StringBuilder sb, long totalPlayerDamage)
             {
-                float percentOfTotalDamage = totalPlayerDamage == 0 ? 0f : (float)TotalDamage * 100f / (float)totalPlayerDamage;
-                sb.AppendLine($"{percentOfTotalDamage:00.00}% | {Name} ({TotalDamage:#,##0} dmg)")
+                string totalDamagePercent;
+                if (Name == "Damage Taken")
+                {
+                    totalDamagePercent = "   N/A";
+                }
+                else
+                {
+                    float percentOfTotalDamage = totalPlayerDamage == 0 ? 0f : (float)TotalDamage * 100f / (float)totalPlayerDamage;
+                    totalDamagePercent = percentOfTotalDamage.ToString("00.00\\%");
+                }
+                
+                sb.AppendLine($"{totalDamagePercent} | {Name} ({TotalDamage:#,##0} dmg)")
                     .AppendLine($"       |   JA : {(ja_critHelper.IsJAValid ? ($"{JustAttackPercent:00.00}%") : "N/A")} - Crit : {CritPercent:00.00}%")
                     .AppendLine($"       |   {TotalHits:#,##0} hits - {MinDamage:#,##0} min, {AverageDamage:#,##0.00} avg, {MaxDamage:#,##0} max");
             }

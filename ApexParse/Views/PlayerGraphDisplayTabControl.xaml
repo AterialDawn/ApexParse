@@ -51,7 +51,7 @@
             <ColumnDefinition Width="5" Style="{StaticResource ShowIfDetailedInfoIsEnabled}"/>
             <ColumnDefinition Width="{Binding Settings.DetailedGridRightWidth, Mode=TwoWay}" Style="{StaticResource ShowIfDetailedInfoIsEnabled}"/>
         </Grid.ColumnDefinitions>
-        <lvc:CartesianChart Grid.Column="0" Series="{Binding ChartSeries}" DisableAnimations="True" Hoverable="False" Visibility="{Binding Settings.ChartVisibility}">
+        <lvc:CartesianChart Grid.Column="0" Series="{Binding ChartSeries}" DisableAnimations="True" Hoverable="False" Visibility="{Binding Settings.ChartVisibility}" Background="#30000000">
             <lvc:CartesianChart.AxisY>
                 <lvc:Axis Foreground="DodgerBlue" IsMerged="True" MinValue="-2"></lvc:Axis>
                 <lvc:Axis Foreground="IndianRed" IsMerged="True" MinValue="-2"></lvc:Axis>

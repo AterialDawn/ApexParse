@@ -74,6 +74,22 @@ namespace ApexParse.ViewModel
             set { CallerSetProperty(ref _chartVisibility, value); }
         }
 
+        bool _hideBorder;
+        public bool HideBorder
+        {
+            get { return _hideBorder; }
+            set { CallerSetProperty(ref _hideBorder, value); onHideBorderChanged(); }
+        }
+
+        bool _renderWindow;
+        public bool RenderWindow
+        {
+            get { return _renderWindow; }
+            set { CallerSetProperty(ref _renderWindow, value); }
+        }
+
+        bool initialized = false;
+
         public SettingsViewModel()
         {
             Height = Settings.Default.WindowHeight;
@@ -83,8 +99,11 @@ namespace ApexParse.ViewModel
             SoftwareRenderingEnabled = Settings.Default.SoftwareRenderingEnabled;
             EnableDetailedDamageInfo = Settings.Default.EnableDetailedDamageInfo;
             ChartVisibility = Settings.Default.ChartVisibility;
+            HideBorder = Settings.Default.HideBorder;
+            RenderWindow = Settings.Default.RenderWindow;
             DetailedGridLeftWidth = new GridLength(Settings.Default.DetailedParseLeftColumnWidth, GridUnitType.Star);
             DetailedGridRightWidth = new GridLength(Settings.Default.DetailedParseRightColumnWidth, GridUnitType.Star);
+            initialized = true;
         }
 
         public void SaveSettings()
@@ -98,11 +117,19 @@ namespace ApexParse.ViewModel
             Settings.Default.DetailedParseRightColumnWidth = DetailedGridRightWidth.Value;
             Settings.Default.DetailedParseLeftColumnWidth = DetailedGridLeftWidth.Value;
             Settings.Default.ChartVisibility = ChartVisibility;
+            Settings.Default.HideBorder = HideBorder;
+            Settings.Default.RenderWindow = RenderWindow;
         }
 
         void onSoftwareRenderingChanged()
         {
             RenderOptions.ProcessRenderMode = SoftwareRenderingEnabled ? System.Windows.Interop.RenderMode.SoftwareOnly : System.Windows.Interop.RenderMode.Default;
+        }
+
+        void onHideBorderChanged()
+        {
+            if (!initialized) return;
+            MessageBox.Show("Hide Border setting changed. ApexParse must be restarted for this change to take effect.", "Restart Needed", MessageBoxButton.OK); //not sure why this doesn't update correctly. Look into later.
         }
     }
 }

@@ -3,12 +3,11 @@ using ApexParse.Utility;
 using ApexParse.ViewModel;
 using Aterial.Utility;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
 
@@ -19,11 +18,12 @@ namespace ApexParse
     /// </summary>
     public partial class App : Application
     {
+        internal static string VersionString { get; private set; }
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            VersionString = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             CrashHandler.Initialize();
-            Trace.Listeners.Add(new ConsoleTraceListener());
             PSO2AttackNameHelper.Update(true); //force download every time, small file anyways.
 
             UpgradeSettings();

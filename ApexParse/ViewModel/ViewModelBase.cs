@@ -23,6 +23,11 @@ namespace ApexParse.ViewModel
 
         protected virtual void CallerPropertyChanged([CallerMemberName] string propName = null)
         {
+            NotifyPropertyChanged(propName);
+        }
+
+        protected virtual void NotifyPropertyChanged(string propName)
+        {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
     }

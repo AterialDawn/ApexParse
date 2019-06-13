@@ -274,5 +274,29 @@ namespace ApexParse.Properties {
                 this["ChartVisibility"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool HideBorder {
+            get {
+                return ((bool)(this["HideBorder"]));
+            }
+            set {
+                this["HideBorder"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool RenderWindow {
+            get {
+                return ((bool)(this["RenderWindow"]));
+            }
+            set {
+                this["RenderWindow"] = value;
+            }
+        }
     }
 }

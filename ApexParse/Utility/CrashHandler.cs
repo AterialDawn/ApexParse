@@ -7,36 +7,50 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace ApexParse.Utility
 {
     //Generic utility class.
     static class CrashHandler
     {
+        static List<Exception> alreadyHandledExceptions = new List<Exception>(10); //preallocate space, in case OutOfMemory.
+
         private static bool _initialized = false;
         public static void Initialize()
         {
             if (_initialized) return;
             _initialized = true;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            Dispatcher.CurrentDispatcher.UnhandledException += CurrentDispatcher_UnhandledException;
+        }
+
+        private static void CurrentDispatcher_UnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            LogException(e.Exception);
         }
 
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            LogException(e.ExceptionObject as Exception);
+        }
+
+        private static void LogException(Exception exc)
         {
             string assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
             StringBuilder sb = new StringBuilder();
             sb.AppendLine($"Application \"{assemblyName}\" unhandled exception")
                 .AppendLine($"Timestamp : {DateTime.Now:F}")
                 .AppendLine();
-            Exception exc = e.ExceptionObject as Exception;
             if (exc == null)
             {
-                sb.AppendLine($"Exception is null? IsTerminating = {e.IsTerminating}");
+                sb.AppendLine($"Exception is null?");
             }
             else
             {
-                sb.AppendLine($"IsTerminating = {e.IsTerminating}")
-                    .AppendLine($"Exception object dump : \n{exc}");
+                if (alreadyHandledExceptions.Contains(exc)) return;
+                alreadyHandledExceptions.Add(exc);
+                sb.AppendLine($"Exception object dump : \n{exc}");
             }
 
             string logText = sb.ToString();

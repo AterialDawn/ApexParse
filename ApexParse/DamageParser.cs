@@ -79,6 +79,7 @@ namespace ApexParse
         {
             monitoredFolder = folderToMonitor;
             if (flag != 0x6c616972657461) throw new InvalidOperationException("mean :(");
+            Console.WriteLine($"Using folder {folderToMonitor} as log file source");
         }
 
         public void Start(TimeSpan updateFrequency)
@@ -93,6 +94,7 @@ namespace ApexParse
             timeUntilSendManualUpdate = TimeSpan.FromTicks(updateClock.Ticks * 2);
 
             string latestFilePath = Directory.GetFiles(monitoredFolder).Where(f => Regex.IsMatch(f, @"\d+\.csv")).OrderByDescending(f => f).First();
+            Console.WriteLine($"Loading file {latestFilePath}");
             FileStream fileStream = File.Open(latestFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             fileStream.Seek(0, SeekOrigin.Begin);
             logStream = new StreamReader(fileStream);

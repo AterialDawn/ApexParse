@@ -57,20 +57,29 @@ namespace ApexParse
                 BuildInvalidInstance();
                 return;
             }
-            Timestamp = FromUnixTime(long.Parse(parts[0]));
-            InstanceId = long.Parse(parts[1]);
-            SourceId = long.Parse(parts[2]);
-            SourceName = parts[3];
-            TargetId = long.Parse(parts[4]);
-            TargetName = parts[5];
-            AttackId = long.Parse(parts[6]);
-            Damage = long.Parse(parts[7]);
-            //i legit cannot believe bool.Parse doesn't consider 1/0 to be true/false.
-            IsJustAttack = int.Parse(parts[8]) == 1;
-            IsCrit = int.Parse(parts[9]) == 1;
-            IsMultiHit = int.Parse(parts[10]) == 1;
-            IsMisc = int.Parse(parts[11]) == 1;
-            IsMisc2 = int.Parse(parts[12]) == 1;
+            try
+            {
+                Timestamp = FromUnixTime(long.Parse(parts[0]));
+                InstanceId = long.Parse(parts[1]);
+                SourceId = long.Parse(parts[2]);
+                SourceName = parts[3];
+                TargetId = long.Parse(parts[4]);
+                TargetName = parts[5];
+                AttackId = long.Parse(parts[6]);
+                Damage = long.Parse(parts[7]);
+                //i legit cannot believe bool.Parse doesn't consider 1/0 to be true/false.
+                IsJustAttack = int.Parse(parts[8]) == 1;
+                IsCrit = int.Parse(parts[9]) == 1;
+                IsMultiHit = int.Parse(parts[10]) == 1;
+                IsMisc = int.Parse(parts[11]) == 1;
+                IsMisc2 = int.Parse(parts[12]) == 1;
+            }
+            catch
+            {
+                //Potentially not the best way to do this, but it should prevent crashes on improperly formatted lines
+                BuildInvalidInstance();
+                return;
+            }
 
             IsZanverseDamage = AttackId == 2106601422;
             IsAISDamage = AISAttackIDs.Contains(AttackId);
@@ -100,6 +109,11 @@ namespace ApexParse
             DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             dtDateTime = dtDateTime.AddSeconds(unixTime).ToLocalTime();
             return dtDateTime;
+        }
+
+        public override string ToString()
+        {
+            return $"sourceId = {SourceId}, targetId = {TargetId}, sourceName = {SourceName ?? "NULL"}, targetName = {TargetName ?? "NULL"}";
         }
     }
 }

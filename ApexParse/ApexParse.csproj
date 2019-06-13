@@ -128,10 +128,12 @@
     <Compile Include="ViewModel\SessionItemVM.cs" />
     <Compile Include="ViewModel\SettingsViewModel.cs" />
     <Compile Include="ViewModel\ViewModelBase.cs" />
+    <Compile Include="ViewModel\WindowOpacityVM.cs" />
     <Compile Include="Views\AllPlayersTabControl.xaml.cs">
       <DependentUpon>AllPlayersTabControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Behaviors\ContextMenuOnLeftClickBehavior.cs" />
+    <Compile Include="Views\Behaviors\RenderElementToFileBehavior.cs" />
     <Compile Include="Views\Behaviors\WindowTopmostBehavior.cs" />
     <Compile Include="Views\Converters\BoolToVisConverter.cs" />
     <Compile Include="Views\Converters\GridLengthConverter.cs" />

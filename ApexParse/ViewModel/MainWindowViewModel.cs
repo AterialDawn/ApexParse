@@ -3,11 +3,10 @@ using ApexParse.Utility;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using GridLength = System.Windows.GridLength;
-using GridUnitType = System.Windows.GridUnitType;
 
 namespace ApexParse.ViewModel
 {
@@ -15,6 +14,7 @@ namespace ApexParse.ViewModel
     {
         public DamageParser CurrentDamageParser { get; private set; }
         public SettingsViewModel SettingsVM { get; private set; }
+        public WindowOpacityVM OpacityVM { get; private set; }
 
         public RelayCommand<object> UpdateDamageLogsCommand { get; private set; }
         public RelayCommand<object> ResetTrackerCommand { get; private set; }
@@ -23,6 +23,8 @@ namespace ApexParse.ViewModel
         public RelayCommand<object> SetAccentColorCommand { get; private set; }
         public RelayCommand<object> SetBackgroundImageCommand { get; private set; }
         public RelayCommand<string> SetWindowTransparencyCommand { get; private set; }
+        public RelayCommand<object> OpenSessionLogsCommand { get; private set; }
+        public RelayCommand<object> ExitCommand { get; private set; }
 
         public ObservableCollection<ViewModelBase> AllTabs { get; private set; } = new ObservableCollection<ViewModelBase>();
 
@@ -119,6 +121,20 @@ namespace ApexParse.ViewModel
             get { return BackgroundImagePath != null; }
         }
 
+        string _saveToImagePath;
+        public string SaveToImagePath
+        {
+            get { return _saveToImagePath; }
+            set { CallerSetProperty(ref _saveToImagePath, value); }
+        }
+
+        bool _renderNow;
+        public bool RenderNow
+        {
+            get { return _renderNow; }
+            set { CallerSetProperty(ref _renderNow, value); }
+        }
+
         private GraphPlayerTabVM selfPlayerTab = null;
         private AllPlayersTabViewModel allPlayersTab = null;
         private Dictionary<PSO2Player, GraphPlayerTabVM> playerTabDict = new Dictionary<PSO2Player, GraphPlayerTabVM>();
@@ -129,6 +145,7 @@ namespace ApexParse.ViewModel
         {
             App.Current.Exit += Current_Exit;
             SettingsVM = new SettingsViewModel();
+            OpacityVM = new WindowOpacityVM(SettingsVM);
 
             UpdateDamageLogsCommand = new RelayCommand<object>((_) => selectDamageLogsPath());
             ResetTrackerCommand = new RelayCommand<object>((_) => resetParser());
@@ -136,7 +153,8 @@ namespace ApexParse.ViewModel
             ReselectDamageLogsCommand = new RelayCommand<object>((_) => reselectDamageLogs());
             SetAccentColorCommand = new RelayCommand<object>((_) => setAccentColor());
             SetBackgroundImageCommand = new RelayCommand<object>((_) => setBackgroundImage());
-            SetWindowTransparencyCommand = new RelayCommand<string>((val) => SettingsVM.WindowOpacity = float.Parse(val));
+            OpenSessionLogsCommand = new RelayCommand<object>((_) => openSessionLogsFolder());
+            ExitCommand = new RelayCommand<object>((_) => App.Current.Shutdown());
 
             if (string.IsNullOrWhiteSpace(Settings.Default.DamageLogsPath))
             {
@@ -168,10 +186,12 @@ namespace ApexParse.ViewModel
             SelectedTab = allPlayersTab;
 
             initializeHotkeys();
+            StatusBarText = $"Welcome to ApexParse v{App.VersionString}";
         }
 
         private void Current_Exit(object sender, System.Windows.ExitEventArgs e)
         {
+            Console.WriteLine("Saving settings");
             Settings.Default.SeparateZanverse = SeparateZanverse;
             Settings.Default.HighlightDPS = HighlightDPS;
             Settings.Default.BackgroundImagePath = BackgroundImagePath == null ? string.Empty : BackgroundImagePath;
@@ -181,6 +201,7 @@ namespace ApexParse.ViewModel
             Settings.Default.OpenGraphForSelf = OpenGraphForSelfAutomatically;
             SettingsVM.SaveSettings();
             Settings.Default.Save();
+            Console.WriteLine("Settings saved");
         }
 
         private void loadSettings()
@@ -243,9 +264,32 @@ namespace ApexParse.ViewModel
 
             UtilityMethods.EnsureFolderExists(destinationFolder);
             File.WriteAllText(reportPath, report);
+            if (SettingsVM.RenderWindow)
+            {
+                SaveToImagePath = Path.ChangeExtension(reportPath, "jpg");
+                RenderNow = true;
+                RenderNow = false;
+            }
 
             StatusBarText += $" | Session Saved!";
             SavedSessions.Add(new SessionItemVM($"{dateString} - {timeString}", reportPath));
+        }
+
+        private void openSessionLogsFolder()
+        {
+            DateTime logTime = CurrentDamageParser.LogStartTime;
+            string dateString = UtilityMethods.ReplaceInvalidCharactersInPath($"{logTime:yyyy\\-MM\\-dd}");
+            string destinationFolder = Path.Combine("Saved Sessions", dateString);
+            if (!Directory.Exists(destinationFolder))
+            {
+                destinationFolder = "Saved Sessions";
+                if (!Directory.Exists(destinationFolder))
+                {
+                    MessageBox.Show("No sessions saved. Try saving one first", "No sessions found", MessageBoxButtons.OK);
+                    return;
+                }
+            }
+            UtilityMethods.OpenWithDefaultProgram(destinationFolder);
         }
 
         private void AllPlayersTab_UserDoubleClickedEvent(object sender, UserDoubleClickedEventArgs e)
