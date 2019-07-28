@@ -29,7 +29,6 @@ namespace ApexParse
 
         private TimeSpan updateFrequency;
         private TimeSpan historyDuration;
-        private int updateTicks = 1;
         private Queue<PSO2DamageInstance> instanceHistory = new Queue<PSO2DamageInstance>();
         private JA_CritHelper critJaHelper = new JA_CritHelper();
 
@@ -44,12 +43,11 @@ namespace ApexParse
         {
             UpdateDamage = 0;
             UpdateDPS = 0;
-            updateTicks++;
         }
 
         public void Update(TimeSpan clockTime)
         {
-            TotalDPS = (float)(TotalDamage / (updateFrequency.TotalSeconds * updateTicks));
+            TotalDPS = (float)(TotalDamage / clockTime.TotalSeconds);
             CheckHistory(clockTime); //check for 0 below
             if (instanceHistory.Count == 0)
             {

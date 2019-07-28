@@ -88,6 +88,15 @@ namespace ApexParse.ViewModel
             set { CallerSetProperty(ref _renderWindow, value); }
         }
 
+        bool _autoEndSession;
+        public bool AutoEndSession
+        {
+            get { return _autoEndSession; }
+            set { CallerSetProperty(ref _autoEndSession, value); onAutoEndChanged(); }
+        }
+
+        public event EventHandler OnAutoEndSessionChanged;
+
         bool initialized = false;
 
         public SettingsViewModel()
@@ -103,6 +112,7 @@ namespace ApexParse.ViewModel
             RenderWindow = Settings.Default.RenderWindow;
             DetailedGridLeftWidth = new GridLength(Settings.Default.DetailedParseLeftColumnWidth, GridUnitType.Star);
             DetailedGridRightWidth = new GridLength(Settings.Default.DetailedParseRightColumnWidth, GridUnitType.Star);
+            AutoEndSession = Settings.Default.AutoEndSession;
             initialized = true;
         }
 
@@ -119,11 +129,17 @@ namespace ApexParse.ViewModel
             Settings.Default.ChartVisibility = ChartVisibility;
             Settings.Default.HideBorder = HideBorder;
             Settings.Default.RenderWindow = RenderWindow;
+            Settings.Default.AutoEndSession = AutoEndSession;
         }
 
         void onSoftwareRenderingChanged()
         {
             RenderOptions.ProcessRenderMode = SoftwareRenderingEnabled ? System.Windows.Interop.RenderMode.SoftwareOnly : System.Windows.Interop.RenderMode.Default;
+        }
+
+        void onAutoEndChanged()
+        {
+            OnAutoEndSessionChanged?.Invoke(this, EventArgs.Empty);
         }
 
         void onHideBorderChanged()

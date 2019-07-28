@@ -17,8 +17,7 @@ namespace ApexParse.Views.Converters
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            bool result = Visibility.Visible.Equals(value) ? true : false;
-            return result;
+            return Visibility.Visible.Equals(value);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

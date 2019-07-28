@@ -24,7 +24,7 @@ namespace ApexParse
             base.OnStartup(e);
             VersionString = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             CrashHandler.Initialize();
-            PSO2AttackNameHelper.Update(true); //force download every time, small file anyways.
+            PSO2AttackNameHelper.Initialize(true); //force download every time, small file anyways.
 
             UpgradeSettings();
             ParseArgs(e.Args);
@@ -33,8 +33,9 @@ namespace ApexParse
 
             RenderOptions.ProcessRenderMode = Settings.Default.SoftwareRenderingEnabled ? System.Windows.Interop.RenderMode.SoftwareOnly : System.Windows.Interop.RenderMode.Default; //set this before creating any windows
 
-            var mainWindowViewModel = new MainWindowViewModel();
-            var window = new MainWindow { DataContext = mainWindowViewModel };
+            var window = new MainWindow();
+            App.Current.MainWindow = window;
+            window.ViewModel = new MainWindowViewModel();
             window.Show();
         }
 

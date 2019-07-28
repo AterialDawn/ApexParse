@@ -10,6 +10,8 @@ namespace ApexParse
     {
         public string Name { get; private set; }
 
+        public bool IsSpecialPlayer { get; private set; } = false;
+
         public DamageView FilteredDamage { get; private set; }
 
         public DamageTracker BasicDamage { get; private set; }
@@ -19,6 +21,14 @@ namespace ApexParse
         public DamageTracker DarkBlastDamage { get; private set; }
 
         public DamageTracker AISDamage { get; private set; }
+        
+        public DamageTracker PhotonDamage { get; private set; }
+
+        public DamageTracker RideroidDamage { get; private set; }
+
+        public DamageTracker LaconiumDamage { get; private set; }
+
+        public DamageTracker HeroTimeFinishDamage { get; private set; }
 
         public DamageTracker DamageTaken { get; private set; }
 
@@ -45,6 +55,7 @@ namespace ApexParse
         public IReadOnlyList<PSO2DamageInstance> ReceivedDamageInstances { get { return _receivedDamageInstances; } }
 
         private PSO2DamageTrackers trackersToSum;
+        private DamageParser parent;
 
         public bool IsAlly
         {
@@ -59,20 +70,60 @@ namespace ApexParse
             return id >= 10000000;
         }
 
-        public PSO2Player(string playerName, long playerId, TimeSpan updateClock, TimeSpan instanceHistoryDuration, PSO2DamageTrackers trackersToCombine)
+        private string actualName;
+
+        public PSO2Player(string playerName, long playerId, TimeSpan updateClock, TimeSpan instanceHistoryDuration, PSO2DamageTrackers trackersToCombine, DamageParser parentInst)
         {
             ID = playerId;
-            Name = playerName;
+            Name = actualName = playerName;
             trackersToSum = trackersToCombine;
             FilteredDamage = new DamageView(trackersToCombine);
+            parent = parentInst;
+            parent.NameAnonimizationChangedEvent += Parent_NameAnonimizationChangedEvent;
             
             BasicDamage = new DamageTracker(updateClock, instanceHistoryDuration, "Basic"); FilteredDamage.RegisterTracker(BasicDamage, PSO2DamageTrackers.Basic);
             ZanverseDamage = new DamageTracker(updateClock, instanceHistoryDuration, "Zanverse"); FilteredDamage.RegisterTracker(ZanverseDamage, PSO2DamageTrackers.Zanverse);
             DarkBlastDamage = new DamageTracker(updateClock, instanceHistoryDuration, "DarkBlast"); FilteredDamage.RegisterTracker(DarkBlastDamage, PSO2DamageTrackers.DarkBlast);
             AISDamage = new DamageTracker(updateClock, instanceHistoryDuration, "AIS"); FilteredDamage.RegisterTracker(AISDamage, PSO2DamageTrackers.AIS);
+            PhotonDamage = new DamageTracker(updateClock, instanceHistoryDuration, "PwP"); FilteredDamage.RegisterTracker(PhotonDamage, PSO2DamageTrackers.PWP);
+            RideroidDamage = new DamageTracker(updateClock, instanceHistoryDuration, "Ride"); FilteredDamage.RegisterTracker(RideroidDamage, PSO2DamageTrackers.Ride);
+            LaconiumDamage = new DamageTracker(updateClock, instanceHistoryDuration, "Lsw"); FilteredDamage.RegisterTracker(LaconiumDamage, PSO2DamageTrackers.LSW);
+            HeroTimeFinishDamage = new DamageTracker(updateClock, instanceHistoryDuration, "HTF"); FilteredDamage.RegisterTracker(HeroTimeFinishDamage, PSO2DamageTrackers.HTF);
             DamageTaken = new DamageTracker(updateClock, instanceHistoryDuration, "Taken");
 
-            allTrackers.AddRange(new[] { BasicDamage, ZanverseDamage, DarkBlastDamage, AISDamage, DamageTaken }); //to simplify calls below...
+            allTrackers.AddRange(new[] { BasicDamage, ZanverseDamage, DarkBlastDamage, AISDamage, DamageTaken, PhotonDamage, RideroidDamage, LaconiumDamage, HeroTimeFinishDamage }); //to simplify calls below...
+            Parent_NameAnonimizationChangedEvent(null, null);
+        }
+
+        public void SetSpecialPlayer(bool isSpecial)
+        {
+            IsSpecialPlayer = isSpecial;
+            if (isSpecial) Name = actualName;
+            else updateName();
+        }
+
+        private void Parent_NameAnonimizationChangedEvent(object sender, EventArgs e)
+        {
+            updateName();
+        }
+
+        void updateName()
+        {
+            if (parent.AreNamesAnonimized)
+            {
+                if (ID == parent.SelfPlayerID)
+                {
+                    Name = "You";
+                }
+                else if (!IsSpecialPlayer)
+                {
+                    Name = "-";
+                }
+            }
+            else
+            {
+                Name = actualName;
+            }
         }
 
         /// <summary>
@@ -93,6 +144,7 @@ namespace ApexParse
         public void RecalculateDPS(TimeSpan clockTime)
         {
             foreach (var tracker in allTrackers) tracker.Update(clockTime);
+            foreach (var info in AttackInfoList) info.Value.Update(clockTime);
             FilteredDamage.Update();
         }
 
@@ -104,7 +156,7 @@ namespace ApexParse
         //specifically for Zanverse player, since it has an invalid ID, AddDamageInstance would ignore it
         public void AddZanverseDamageInstance(PSO2DamageInstance instance)
         {
-            instance.ReplaceZanverseName();
+            //instance.ReplaceZanverseName(); //due to adding AnonymizeDamage feature, names might get leaked via zanverse player, so just disable name replacement for now
             ZanverseDamage.AddDamage(instance);
             if (MaxHit < instance.Damage)
             {
@@ -127,8 +179,6 @@ namespace ApexParse
                     _attackInfoList.Add("Damage Taken", new AttackInfo("Damage Taken", 0));
                 }
                 _attackInfoList["Damage Taken"].AddDamageInstance(instance);
-
-                Name = instance.TargetName;
             }
             else if (instance.SourceId == ID)
             {
@@ -151,6 +201,30 @@ namespace ApexParse
 
                     if (trackersToSum.HasFlag(PSO2DamageTrackers.Zanverse)) AddAttackInfo(instance);
                 }
+                else if (instance.IsHeroFinishDamage)
+                {
+                    HeroTimeFinishDamage.AddDamage(instance);
+
+                    if (trackersToSum.HasFlag(PSO2DamageTrackers.HTF)) AddAttackInfo(instance);
+                }
+                else if (instance.IsPhotonDamage)
+                {
+                    PhotonDamage.AddDamage(instance);
+
+                    if (trackersToSum.HasFlag(PSO2DamageTrackers.PWP)) AddAttackInfo(instance);
+                }
+                else if (instance.IsRideroidDamage)
+                {
+                    RideroidDamage.AddDamage(instance);
+
+                    if (trackersToSum.HasFlag(PSO2DamageTrackers.Ride)) AddAttackInfo(instance);
+                }
+                else if (instance.IsLaconiumDamage)
+                {
+                    LaconiumDamage.AddDamage(instance);
+
+                    if (trackersToSum.HasFlag(PSO2DamageTrackers.LSW)) AddAttackInfo(instance);
+                }
                 else
                 {
                     BasicDamage.AddDamage(instance);
@@ -160,13 +234,26 @@ namespace ApexParse
                 
                 _damageInstances.Add(instance);
 
-                if (MaxHit < instance.Damage)
+                if (instance.IsZanverseDamage) //only update ZV max hit if ZV is not separated
                 {
-                    MaxHit = instance.Damage;
-                    MaxHitName = instance.AttackName;
+                    if (trackersToSum.HasFlag(PSO2DamageTrackers.Zanverse))
+                    {
+                        UpdateMaxHit(instance);
+                    }
                 }
+                else
+                {
+                    UpdateMaxHit(instance);
+                }
+            }
+        }
 
-                Name = instance.SourceName;
+        void UpdateMaxHit(PSO2DamageInstance instance)
+        {
+            if (MaxHit < instance.Damage)
+            {
+                MaxHit = instance.Damage;
+                MaxHitName = instance.AttackName;
             }
         }
 
@@ -200,19 +287,7 @@ namespace ApexParse
                 container.Value.WriteSummaryToStringBuilder(sb, FilteredDamage.TotalDamage);
             }
 
-            if (ShouldLogDamageTaken())
-            {
-                var takenContainer = new AttackInfo("Damage Taken", 0);
-                foreach (var instance in DamageTaken.RelevantDamageInstances) takenContainer.AddDamageInstance(instance);
-                takenContainer.WriteSummaryToStringBuilder(sb, 0);
-            }
-
             return sb.ToString();
-        }
-
-        private bool ShouldLogDamageTaken()
-        {
-            return ID != long.MaxValue; //kind of a shitty flag t b h
         }
 
         public class AttackInfo
@@ -224,6 +299,7 @@ namespace ApexParse
             public long TotalHits { get; private set; }
             public long MinDamage { get; private set; }
             public float AverageDamage { get { return TotalHits != 0 ? ((float)TotalDamage / (float)TotalHits) : 0; } }
+            public float DPS { get; private set; } = 0;
             public long MaxDamage { get; private set; }
             public long AttackId { get; private set; }
 
@@ -253,6 +329,11 @@ namespace ApexParse
                 else MaxDamage = instance.Damage;
 
                 ja_critHelper.AddDamage(instance);
+            }
+
+            public void Update(TimeSpan clockTime)
+            {
+                DPS = (float)(TotalDamage / clockTime.TotalSeconds);
             }
 
             internal void WriteSummaryToStringBuilder(StringBuilder sb, long totalPlayerDamage)

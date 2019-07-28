@@ -13,7 +13,12 @@ namespace ApexParse
         Zanverse    = (1 << 1),
         DarkBlast   = (1 << 2),
         AIS         = (1 << 3),
-        All = Basic | Zanverse | DarkBlast | AIS
+        HTF         = (1 << 4), //Hero Finish
+        PWP         = (1 << 5), //Photon 
+        Ride        = (1 << 6), //Rideroid
+        LSW         = (1 << 7), //Laconium
+        All = Basic | Zanverse | DarkBlast | AIS | HTF | PWP | Ride | LSW,
+        None = 0
     }
 
     [Flags]
@@ -30,14 +35,15 @@ namespace ApexParse
     [Flags]
     enum DetailedDamageVisibleColumns
     {
-        Name        = (1 << 0),
-        Count = (1 << 1),
-        TotalDamage = (1 << 2),
-        JAPercent = (1 << 3),
-        CritPercent = (1 << 4),
-        MinDamage = (1 << 5),
-        AverageDamage = (1 << 6),
-        MaxDamage = (1 << 7),
-        All = Name | Count | TotalDamage | JAPercent | CritPercent | MinDamage | AverageDamage | MaxDamage
+        Name            = (1 << 0),
+        Count           = (1 << 1),
+        TotalDamage     = (1 << 2),
+        JAPercent       = (1 << 3),
+        CritPercent     = (1 << 4),
+        MinDamage       = (1 << 5),
+        AverageDamage   = (1 << 6),
+        MaxDamage       = (1 << 7),
+        DPS             = (1 << 8),
+        All = Name | Count | TotalDamage | JAPercent | CritPercent | MinDamage | AverageDamage | MaxDamage | DPS
     }
 }

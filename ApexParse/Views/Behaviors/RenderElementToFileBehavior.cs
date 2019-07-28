@@ -11,6 +11,15 @@ using System.Windows.Media.Imaging;
 
 namespace ApexParse.Views.Behaviors
 {
+    internal class BehaviorRelayer
+    {
+        public Action Receiver { get; set; } = null;
+
+        public void Execute()
+        {
+            Receiver?.Invoke();
+        }
+    }
     internal class RenderElementToPathBehavior : Behavior<UIElement>
     {
         public static readonly DependencyProperty DestinationPathProperty =
@@ -20,17 +29,17 @@ namespace ApexParse.Views.Behaviors
                 typeof(RenderElementToPathBehavior),
                 new FrameworkPropertyMetadata(null) { BindsTwoWayByDefault = true });
 
-        public static readonly DependencyProperty SaveNowProperty =
+        public static readonly DependencyProperty SaveNowRelayProperty =
             DependencyProperty.RegisterAttached(
-                "SaveNow",
-                typeof(bool),
+                "SaveNowRelay",
+                typeof(BehaviorRelayer),
                 typeof(RenderElementToPathBehavior),
-                new FrameworkPropertyMetadata(false) { BindsTwoWayByDefault = true });
+                new FrameworkPropertyMetadata() { BindsTwoWayByDefault = true });
 
-        public bool SaveNow
+        public BehaviorRelayer SaveNowRelay
         {
-            get { return (bool)GetValue(SaveNowProperty); }
-            set { SetValue(SaveNowProperty, value); }
+            get { return (BehaviorRelayer)GetValue(SaveNowRelayProperty); }
+            set { SetValue(SaveNowRelayProperty, value); }
         }
 
         public string DestinationPath
@@ -41,30 +50,32 @@ namespace ApexParse.Views.Behaviors
 
         protected override void OnAttached()
         {
-            System.ComponentModel.DependencyPropertyDescriptor.FromProperty(SaveNowProperty, typeof(RenderElementToPathBehavior)).AddValueChanged(this, onSaveNowChanged);
+            System.ComponentModel.DependencyPropertyDescriptor.FromProperty(SaveNowRelayProperty, typeof(RenderElementToPathBehavior)).AddValueChanged(this, onRelayChanged);
         }
 
         protected override void OnDetaching()
         {
-            System.ComponentModel.DependencyPropertyDescriptor.FromProperty(SaveNowProperty, typeof(RenderElementToPathBehavior)).RemoveValueChanged(this, onSaveNowChanged);
+            System.ComponentModel.DependencyPropertyDescriptor.FromProperty(SaveNowRelayProperty, typeof(RenderElementToPathBehavior)).RemoveValueChanged(this, onRelayChanged);
         }
 
-        private void onSaveNowChanged(object sender, EventArgs args)
+        private void onRelayChanged(object sender, EventArgs args)
         {
-            if (SaveNow)
-            {
-                UIElement element = AssociatedObject as UIElement;
-                RenderTargetBitmap bmp = new RenderTargetBitmap((int)element.RenderSize.Width, (int)element.RenderSize.Height, 96, 96, PixelFormats.Pbgra32);
+            SaveNowRelay.Receiver = renderUiElementNow;
+        }
 
-                bmp.Render(element);
+        private void renderUiElementNow()
+        {
+            UIElement element = AssociatedObject as UIElement;
+            RenderTargetBitmap bmp = new RenderTargetBitmap((int)element.RenderSize.Width, (int)element.RenderSize.Height, 96, 96, PixelFormats.Pbgra32);
 
-                var encoder = new JpegBitmapEncoder();
-                encoder.QualityLevel = 95;
+            bmp.Render(element);
 
-                encoder.Frames.Add(BitmapFrame.Create(bmp));
-                using (Stream stm = File.Create(DestinationPath))
-                    encoder.Save(stm);
-            }
+            var encoder = new JpegBitmapEncoder();
+            encoder.QualityLevel = 95;
+
+            encoder.Frames.Add(BitmapFrame.Create(bmp));
+            using (Stream stm = File.Create(DestinationPath))
+                encoder.Save(stm);
         }
     }
 }

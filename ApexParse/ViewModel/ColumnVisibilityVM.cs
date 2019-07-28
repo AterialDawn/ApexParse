@@ -65,24 +65,32 @@ namespace ApexParse.ViewModel
             set { CallerSetProperty(ref _maxDamage, value); }
         }
 
+        Visibility _dps;
+        public Visibility DPS
+        {
+            get { return _dps; }
+            set { CallerSetProperty(ref _dps, value); }
+        }
+
         private DetailedDamageVisibleColumns visibilityEnum;
 
         public ColumnVisibilityVM(DetailedDamageVisibleColumns visEnum)
         {
             visibilityEnum = visEnum;
-            Name = HasFlag(DetailedDamageVisibleColumns.Name) ? Visibility.Visible : Visibility.Collapsed;
-            Count = HasFlag(DetailedDamageVisibleColumns.Count) ? Visibility.Visible : Visibility.Collapsed;
-            TotalDamage = HasFlag(DetailedDamageVisibleColumns.TotalDamage) ? Visibility.Visible : Visibility.Collapsed;
-            JAPercent = HasFlag(DetailedDamageVisibleColumns.JAPercent) ? Visibility.Visible : Visibility.Collapsed;
-            CritPercent = HasFlag(DetailedDamageVisibleColumns.CritPercent) ? Visibility.Visible : Visibility.Collapsed;
-            MinDamage = HasFlag(DetailedDamageVisibleColumns.MinDamage) ? Visibility.Visible : Visibility.Collapsed;
-            AverageDamage = HasFlag(DetailedDamageVisibleColumns.AverageDamage) ? Visibility.Visible : Visibility.Collapsed;
-            MaxDamage = HasFlag(DetailedDamageVisibleColumns.MaxDamage) ? Visibility.Visible : Visibility.Collapsed;
+            Name = GetVisibility(DetailedDamageVisibleColumns.Name);
+            Count = GetVisibility(DetailedDamageVisibleColumns.Count);
+            TotalDamage = GetVisibility(DetailedDamageVisibleColumns.TotalDamage);
+            JAPercent = GetVisibility(DetailedDamageVisibleColumns.JAPercent);
+            CritPercent = GetVisibility(DetailedDamageVisibleColumns.CritPercent);
+            MinDamage = GetVisibility(DetailedDamageVisibleColumns.MinDamage);
+            AverageDamage = GetVisibility(DetailedDamageVisibleColumns.AverageDamage);
+            MaxDamage = GetVisibility(DetailedDamageVisibleColumns.MaxDamage);
+            DPS = GetVisibility(DetailedDamageVisibleColumns.DPS);
         }
 
-        private bool HasFlag(DetailedDamageVisibleColumns flag)
+        private Visibility GetVisibility(DetailedDamageVisibleColumns flag)
         {
-            return visibilityEnum.HasFlag(flag);
+            return visibilityEnum.HasFlag(flag) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public DetailedDamageVisibleColumns GetEnum()
@@ -96,6 +104,7 @@ namespace ApexParse.ViewModel
             retVal |= AddFlag(MinDamage, DetailedDamageVisibleColumns.MinDamage);
             retVal |= AddFlag(AverageDamage, DetailedDamageVisibleColumns.AverageDamage);
             retVal |= AddFlag(MaxDamage, DetailedDamageVisibleColumns.MaxDamage);
+            retVal |= AddFlag(DPS, DetailedDamageVisibleColumns.DPS);
             return retVal;
         }
 

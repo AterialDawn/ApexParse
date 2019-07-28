@@ -96,6 +96,7 @@ namespace ApexParse.ViewModel
         public GraphPlayerTabVM(MainWindowViewModel parentVM, ColumnVisibilityVM columnVisVM, PSO2Player associatedPlayer)
         {
             parent = parentVM;
+            parent.OnAnonymizePlayersChanged += Parent_OnAnonymizePlayersChanged;
             parser = parentVM.CurrentDamageParser;
             player = associatedPlayer;
             TabName = associatedPlayer.Name;
@@ -117,6 +118,12 @@ namespace ApexParse.ViewModel
 
             parser.UpdateTick += Parser_UpdateTick;
         }
+
+        private void Parent_OnAnonymizePlayersChanged(object sender, EventArgs e)
+        {
+            TabName = player.Name;
+        }
+        
 
         public void SetEnabledLineSeries(EnabledLineSeries newSeries)
         {

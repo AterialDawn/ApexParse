@@ -8,12 +8,6 @@ namespace ApexParse
 {
     class PSO2DamageInstance
     {
-        private static long[] AISAttackIDs = new long[] { 119505187, 79965782, 79965783, 79965784, 80047171, 434705298, 79964675, 1460054769, 4081218683, 3298256598, 2826401717 };
-        private static long[] ElderDarkBlastIds = new long[] { 267911699, 262346668, 265285249, 264996390, 311089933, 3988916155, 265781051, 3141577094, 2289473436, 517914866, 517914869, 1117313539, 1611279117, 3283361988, 1117313602, 395090797, 2429416220, 1697271546, 1117313924 };
-        private static long[] LoserDarkBlastIds = new long[] { 2743071591, 2743062721, 1783571383, 2928504078, 1783571188, 2849190450, 1223455602, 651603449, 2970658149, 2191939386, 2091027507, 4078260742 };
-        private static long[] AppDarkBlastIds = new long[] { 3379639420, 3380458763, 3380192966, 3380628902, 3377229307, 3376960044, 3377051585, 3377849861, 855002982, 2326333456, 3725887474, 361825851, 3535795759, 781100939, 793625150, 1764406382, 3891439877, 2295506478, 1738105582, 37504833, 1891210633, 3617357696, 452272060 };
-        private static long[] DoubleDarkBlastIds = new long[] { 2002943320, 2000047869, 2002496834, 1957174279, 1955884339, 4134333680, 4271466373, 305729398, 682884756, 4271465479, 3983075073, 4271465542, 3593316716, 483639921, 472092093 };
-
         public DateTime Timestamp { get; private set; }
 
         public long InstanceId { get; private set; } = -1;
@@ -45,6 +39,14 @@ namespace ApexParse
         public bool IsAISDamage { get; private set; }
 
         public bool IsDarkBlastDamage { get; private set; }
+
+        public bool IsHeroFinishDamage { get; private set; }
+
+        public bool IsPhotonDamage { get; private set; }
+
+        public bool IsRideroidDamage { get; private set; }
+        
+        public bool IsLaconiumDamage { get; private set; }
 
         public string AttackName { get; private set; }
 
@@ -82,9 +84,13 @@ namespace ApexParse
             }
 
             IsZanverseDamage = AttackId == 2106601422;
-            IsAISDamage = AISAttackIDs.Contains(AttackId);
-            IsDarkBlastDamage = ElderDarkBlastIds.Contains(AttackId) || LoserDarkBlastIds.Contains(AttackId) || AppDarkBlastIds.Contains(AttackId) || DoubleDarkBlastIds.Contains(AttackId);
+            IsAISDamage = PSO2AttackNameHelper.IsAisAttack(AttackId);
+            IsDarkBlastDamage = PSO2AttackNameHelper.IsDarkBlastAttack(AttackId);
             AttackName = PSO2AttackNameHelper.GetAttackName(AttackId);
+            IsHeroFinishDamage = PSO2AttackNameHelper.IsHeroFinishAttack(AttackId);
+            IsPhotonDamage = PSO2AttackNameHelper.IsPhotonAttack(AttackId);
+            IsRideroidDamage = PSO2AttackNameHelper.IsRideroidAttack(AttackId);
+            IsLaconiumDamage = PSO2AttackNameHelper.IsRideroidAttack(AttackId);
         }
 
         public void ReplaceZanverseName()

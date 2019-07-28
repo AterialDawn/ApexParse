@@ -66,6 +66,13 @@ namespace ApexParse.ViewModel
             set { CallerSetProperty(ref _attackMaxDamage, value); }
         }
 
+        string _attackDPS = "0";
+        public string AttackDPS
+        {
+            get { return _attackDPS; }
+            set { CallerSetProperty(ref _attackDPS, value); }
+        }
+
         GraphPlayerTabVM parent;
         PSO2Player.AttackInfo attackInfo;
         public DetailedAttackInfoVM(GraphPlayerTabVM parentVM, PSO2Player.AttackInfo attackInfo)
@@ -93,6 +100,7 @@ namespace ApexParse.ViewModel
             AttackMinDamage = attackInfo.MinDamage.ToString("#,##0");
             AttackAverageDamage = attackInfo.AverageDamage.ToString("#,##0");
             AttackMaxDamage = attackInfo.MaxDamage.ToString("#,##0");
+            AttackDPS = DamageParser.FormatDPSNumber(attackInfo.DPS);
         }
     }
 }

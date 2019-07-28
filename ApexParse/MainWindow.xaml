@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ApexParse"
+        xmlns:v="clr-namespace:ApexParse.Views"
         xmlns:conv="clr-namespace:ApexParse.Views.Converters"
         xmlns:MW="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:Behaviors="clr-namespace:ApexParse.Views.Behaviors"
@@ -14,7 +15,7 @@
         Title="ApexParse" Height="{Binding SettingsVM.Height,Mode=TwoWay,FallbackValue=390}" Width="{Binding SettingsVM.Width,Mode=TwoWay,FallbackValue=850}" SaveWindowPosition="True" ShowMaxRestoreButton="False" TitlebarHeight="20" AllowsTransparency="True" Opacity="{Binding SettingsVM.WindowOpacity}">
     <i:Interaction.Behaviors>
         <Behaviors:WindowTopmostBehavior StayTopmost="{Binding SettingsVM.WindowTopmost}" />
-        <Behaviors:RenderElementToPathBehavior DestinationPath="{Binding SaveToImagePath}" SaveNow="{Binding RenderNow}" />
+        <Behaviors:RenderElementToPathBehavior DestinationPath="{Binding SaveToImagePath}" SaveNowRelay="{Binding RenderNowRelay}" />
     </i:Interaction.Behaviors>
     <Window.Resources>
         <Style x:Key="MetroWindowBorderStyle" TargetType="{x:Type MW:MetroWindow}">
@@ -30,6 +31,7 @@
                     Value="0,0,0,0"></Setter>
         </Style>
         <conv:BoolToVisConverter x:Key="BoolToVisConvert" />
+        <BooleanToVisibilityConverter x:Key="VisToBoolConvert" />
     </Window.Resources>
     <MW:MetroWindow.LeftWindowCommands>
         <MW:WindowCommands>
@@ -39,8 +41,8 @@
                 </i:Interaction.Behaviors>
                 <Button.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="End Session" Command="{Binding SaveSessionCommand}" />
-                        <MenuItem Header="Reset Parser" Command="{Binding ResetTrackerCommand}" />
+                        <MenuItem Header="End Session    Ctrl+Shift+E" Command="{Binding SaveSessionCommand}" />
+                        <MenuItem Header="Reset Parser   Ctrl+Shift+R" Command="{Binding ResetTrackerCommand}" />
                         <MenuItem Header="Reselect damagelogs folder" Command="{Binding ReselectDamageLogsCommand}"/>
                         <Separator />
                         <MenuItem Header="Open Session Logs Folder" Command="{Binding OpenSessionLogsCommand}" />
@@ -69,12 +71,32 @@
                 </i:Interaction.Behaviors>
                 <Button.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Separate Zanverse" IsCheckable="True" IsChecked="{Binding SeparateZanverse}" IsEnabled="{Binding IsParsingInactive}"/>
                         <MenuItem Header="Background DPS Highlighting" IsCheckable="True" IsChecked="{Binding HighlightDPS}" IsEnabled="{Binding IsParsingInactive}"/>
                         <MenuItem Header="Shorten DPS Readouts" IsCheckable="True" IsChecked="{Binding ShortenDPSReadout}" IsEnabled="{Binding IsParsingInactive}"/>
                         <MenuItem Header="Auto Open Player Tab for Self" IsCheckable="True" IsChecked="{Binding OpenGraphForSelfAutomatically}" IsEnabled="{Binding IsParsingInactive}" />
+                        <MenuItem Header="Auto End Session" IsCheckable="True" IsChecked="{Binding SettingsVM.AutoEndSession}" />
+                        <MenuItem Header="Change Auto-end timeout" Command="{Binding ChangeAutoEndTimeoutCommand}" IsEnabled="{Binding SettingsVM.AutoEndSession}" />
                         <MenuItem Header="Show Graph" IsCheckable="True" IsChecked="{Binding SettingsVM.ChartVisibility, Converter={StaticResource BoolToVisConvert}}" />
                         <MenuItem Header="Save Session to JPG" IsCheckable="True" IsChecked="{Binding SettingsVM.RenderWindow}" />
+                        <MenuItem Header="Anonymize Players" IsCheckable="True" IsChecked="{Binding AnonymizePlayers}" />
+                        <MenuItem Header="Separate Damage Types..." IsEnabled="{Binding IsParsingInactive}">
+                            <MenuItem Header="AIS" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.SplitAIS}" />
+                            <MenuItem Header="Dark Blast" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.SplitDB}" />
+                            <MenuItem Header="Hero Finish" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.SplitHTF}" />
+                            <MenuItem Header="Laconium Sword" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.SplitLSW}" />
+                            <MenuItem Header="Photon Weapons" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.SplitPWP}" />
+                            <MenuItem Header="Rideroid" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.SplitRide}" />
+                            <MenuItem Header="Zanverse" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.SplitZanverse}" />
+                        </MenuItem>
+                        <MenuItem Header="Hide Damage Types..." IsEnabled="{Binding IsParsingInactive}">
+                            <MenuItem Header="AIS" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.HideAIS}" />
+                            <MenuItem Header="Dark Blast" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.HideDB}" />
+                            <MenuItem Header="Hero Finish" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.HideHTF}" />
+                            <MenuItem Header="Laconium Sword" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.HideLSW}" />
+                            <MenuItem Header="Photon Weapons" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.HidePWP}" />
+                            <MenuItem Header="Rideroid" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.HideRide}" />
+                            <MenuItem Header="Zanverse" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.HideZanverse}" />
+                        </MenuItem>
                         <MenuItem Header="Visible Lines...">
                             <MenuItem Header="Total Damage Dealt" IsCheckable="True" IsChecked="{Binding LineSeriesSettings.TotalDamageEnabled}" />
                             <MenuItem Header="Total Damage Taken" IsCheckable="True" IsChecked="{Binding LineSeriesSettings.TakenDamageEnabled}" />
@@ -110,6 +132,7 @@
                             <MenuItem Header="Name" IsCheckable="True" IsChecked="{Binding DetailedDamageVisibleSettings.Name, Converter={StaticResource BoolToVisConvert}}" />
                             <MenuItem Header="Count" IsCheckable="True" IsChecked="{Binding DetailedDamageVisibleSettings.Count, Converter={StaticResource BoolToVisConvert}}" />
                             <MenuItem Header="Total Damage" IsCheckable="True" IsChecked="{Binding DetailedDamageVisibleSettings.TotalDamage, Converter={StaticResource BoolToVisConvert}}" />
+                            <MenuItem Header="DPS" IsCheckable="True" IsChecked="{Binding DetailedDamageVisibleSettings.DPS, Converter={StaticResource BoolToVisConvert}}" />
                             <MenuItem Header="JA %" IsCheckable="True" IsChecked="{Binding DetailedDamageVisibleSettings.JAPercent, Converter={StaticResource BoolToVisConvert}}" />
                             <MenuItem Header="Crit %" IsCheckable="True" IsChecked="{Binding DetailedDamageVisibleSettings.CritPercent, Converter={StaticResource BoolToVisConvert}}" />
                             <MenuItem Header="Min Damage" IsCheckable="True" IsChecked="{Binding DetailedDamageVisibleSettings.MinDamage, Converter={StaticResource BoolToVisConvert}}" />
@@ -139,6 +162,9 @@
                     </DataTemplate>
                 </TabControl.ItemTemplate>
             </TabControl>
+        </Grid>
+        <Grid Background="#60000000" Grid.Row="0" Visibility="{Binding RequestingUserInput, Converter={StaticResource VisToBoolConvert}, FallbackValue='Collapsed'}"> <!-- Set fallback to Visible to see overlay-->
+            <v:RequestUserInputControl HorizontalAlignment="Center" VerticalAlignment="Center" Width="300" Height="130" DataContext="{Binding RequestInputVM}" />
         </Grid>
         <StatusBar Grid.Row="1" Background="#333333">
             <TextBlock Text="{Binding StatusBarText, FallbackValue='Waiting...'}" Foreground="#cccccc"></TextBlock>

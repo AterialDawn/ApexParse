@@ -90,7 +90,9 @@ namespace ApexParse.ViewModel
         public AllPlayersTabPlayerVM(MainWindowViewModel parentVM, PSO2Player player)
         {
             AssociatedPlayer = player;
+            Name = AssociatedPlayer.Name;
             parent = parentVM;
+            parent.OnAnonymizePlayersChanged += Parent_OnAnonymizePlayersChanged;
             parser = parent.CurrentDamageParser;
             BackgroundBrush = new LinearGradientBrush();
             BackgroundBrush.StartPoint = new System.Windows.Point(0, 0);
@@ -98,6 +100,11 @@ namespace ApexParse.ViewModel
             ParserUpdate();
 
             loadHighlightColor();
+        }
+
+        private void Parent_OnAnonymizePlayersChanged(object sender, EventArgs e)
+        {
+            Name = AssociatedPlayer.Name;
         }
 
         /// <summary>
@@ -110,7 +117,7 @@ namespace ApexParse.ViewModel
             TotalDamagePercent = (totalDamagePercent * 100.0).ToString("0.00");
             TotalDamageDealt = $"{AssociatedPlayer.FilteredDamage.TotalDamage:#,##0}";
             TotalDamageTaken = $"{AssociatedPlayer.DamageTaken.TotalDamage:#,##0}";
-            TotalDPS = $"{DamageParser.FormatDPSNumber(AssociatedPlayer.FilteredDamage.TotalDPS)}";
+            TotalDPS = DamageParser.FormatDPSNumber(AssociatedPlayer.FilteredDamage.TotalDPS);
             JustAttackPercent = $"{AssociatedPlayer.FilteredDamage.JustAttackPercent:0.00}";
             CritPercent = $"{AssociatedPlayer.FilteredDamage.CritPercent:0.00}";
             MaxHitInfo = $"{AssociatedPlayer.MaxHit:#,##0} {AssociatedPlayer.MaxHitName}";

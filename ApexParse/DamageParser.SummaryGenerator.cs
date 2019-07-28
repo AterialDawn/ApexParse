@@ -11,6 +11,7 @@ namespace ApexParse
         private string summary_generateSummary()
         {
             StringBuilder result = new StringBuilder($"ApexParse Summary Generated on {DateTime.Now:F}");
+            result.AppendLine($"{GetElapsedTime():h\\:mm\\:ss} | Total Damage : {TotalFriendlyDamage:#,##0} | Total DPS : {FormatDPSNumber(TotalFriendlyDPS)}");
             result.AppendLine().AppendLine()
             .AppendLine("[ Overview ]")
             .AppendLine();
@@ -22,12 +23,12 @@ namespace ApexParse
 
         private void summary_AddEachPlayerOverview(StringBuilder result)
         {
-            foreach (var player in _players.OrderByDescending(p => p.Value.FilteredDamage.TotalDamage))
+            foreach (var player in Players.OrderByDescending(p => p.FilteredDamage.TotalDamage))
             {
-                result.Append(player.Value.GenerateDamageSummary());
+                result.Append(player.GenerateDamageSummary());
                 result.AppendLine();
             }
-            if (IsZanverseSplit)
+            if (IsZanverseSplit && ZanversePlayer != null)
             {
                 result.Append(ZanversePlayer.GenerateDamageSummary());
                 result.AppendLine();
@@ -36,11 +37,11 @@ namespace ApexParse
 
         private void summary_AddAllPlayersOverview(StringBuilder result)
         {
-            foreach (var player in _players.OrderByDescending(p => p.Value.FilteredDamage.TotalDamage))
+            foreach (var player in Players.OrderByDescending(p => p.FilteredDamage.TotalDamage))
             {
-                summary_GenerateAllPlayerSummaryForPlayer(player.Value, result);
+                summary_GenerateAllPlayerSummaryForPlayer(player, result);
             }
-            if (IsZanverseSplit)
+            if (IsZanverseSplit && ZanversePlayer != null)
             {
                 summary_GenerateAllPlayerSummaryForPlayer(ZanversePlayer, result);
             }

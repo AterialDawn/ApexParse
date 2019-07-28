@@ -71,6 +71,7 @@
             <DataGrid ColumnHeaderStyle="{StaticResource TransparentColumnHeaderMetro}"
                   IsReadOnly="True"
                   AutoGenerateColumns="False"
+                  CanUserSortColumns="False"
                   Background="#30000000"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                   ScrollViewer.VerticalScrollBarVisibility="Disabled"
@@ -79,6 +80,7 @@
                     <DataGridTextColumn Width="1.5*"    Header="Name"   Visibility="{Binding DataContext.ColumnVisibility.Name, Mode=TwoWay, Source={x:Reference ProxyElement}}"            Binding="{Binding AttackName}" />
                     <DataGridTextColumn ElementStyle="{StaticResource RightAlignedTextBlock}" Width=".7*"     Header="#"      Visibility="{Binding DataContext.ColumnVisibility.Count, Mode=TwoWay, Source={x:Reference ProxyElement}}"           Binding="{Binding AttackCount}"/>
                     <DataGridTextColumn ElementStyle="{StaticResource RightAlignedTextBlock}" Width="1*"      Header="Total"  Visibility="{Binding DataContext.ColumnVisibility.TotalDamage, Mode=TwoWay, Source={x:Reference ProxyElement}}"     Binding="{Binding AttackTotalDamage}" />
+                    <DataGridTextColumn ElementStyle="{StaticResource RightAlignedTextBlock}" Width="1*"      Header="DPS"  Visibility="{Binding DataContext.ColumnVisibility.DPS, Mode=TwoWay, Source={x:Reference ProxyElement}}"               Binding="{Binding AttackDPS}" />
                     <DataGridTextColumn ElementStyle="{StaticResource RightAlignedTextBlock}" Width="1*"      Header="JA %"   Visibility="{Binding DataContext.ColumnVisibility.JAPercent, Mode=TwoWay, Source={x:Reference ProxyElement}}"       Binding="{Binding AttackJAPercent}"/>
                     <DataGridTextColumn ElementStyle="{StaticResource RightAlignedTextBlock}" Width="1*"      Header="Crit %" Visibility="{Binding DataContext.ColumnVisibility.CritPercent, Mode=TwoWay, Source={x:Reference ProxyElement}}"     Binding="{Binding AttackCritPercent}" />
                     <DataGridTextColumn ElementStyle="{StaticResource RightAlignedTextBlock}" Width="1*"      Header="Min"    Visibility="{Binding DataContext.ColumnVisibility.MinDamage, Mode=TwoWay, Source={x:Reference ProxyElement}}"       Binding="{Binding AttackMinDamage}"/>

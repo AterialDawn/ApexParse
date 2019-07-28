@@ -1,5 +1,6 @@
 ﻿using ApexParse.Properties;
 using ApexParse.Utility;
+using ApexParse.Views.Behaviors;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -25,10 +26,18 @@ namespace ApexParse.ViewModel
         public RelayCommand<string> SetWindowTransparencyCommand { get; private set; }
         public RelayCommand<object> OpenSessionLogsCommand { get; private set; }
         public RelayCommand<object> ExitCommand { get; private set; }
+        public RelayCommand<object> ChangeAutoEndTimeoutCommand { get; private set; }
 
         public ObservableCollection<ViewModelBase> AllTabs { get; private set; } = new ObservableCollection<ViewModelBase>();
 
         public ObservableCollection<SessionItemVM> SavedSessions { get; private set; } = new ObservableCollection<SessionItemVM>();
+
+        BehaviorRelayer _renderNowRelay = new BehaviorRelayer();
+        public BehaviorRelayer RenderNowRelay
+        {
+            get { return _renderNowRelay; }
+            set { CallerSetProperty(ref _renderNowRelay, value); }
+        }
 
         bool _shortenDPSReadout;
         public bool ShortenDPSReadout
@@ -42,6 +51,13 @@ namespace ApexParse.ViewModel
         {
             get { return _openGraphForSelfAutomatically; }
             set { CallerSetProperty(ref _openGraphForSelfAutomatically, value); }
+        }
+
+        HiddenSplitTypesSettingsVM _damageTypesSettings;
+        public HiddenSplitTypesSettingsVM DamageTypesSettings
+        {
+            get { return _damageTypesSettings; }
+            set { CallerSetProperty(ref _damageTypesSettings, value); }
         }
 
         ColumnVisibilityVM _detailedDamageVisibleSettings;
@@ -77,13 +93,6 @@ namespace ApexParse.ViewModel
         {
             get { return _showInstantDPS; }
             set { CallerSetProperty(ref _showInstantDPS, value); }
-        }
-
-        private bool _separateZanverse = false;
-        public bool SeparateZanverse
-        {
-            get { return _separateZanverse; }
-            set { CallerSetProperty(ref _separateZanverse, value); onSeparateZanverseChanged(); onSettingsChanged(); }
         }
 
         private bool _highlightDPS = true;
@@ -135,17 +144,52 @@ namespace ApexParse.ViewModel
             set { CallerSetProperty(ref _renderNow, value); }
         }
 
+        bool _anonymizePlayers;
+        public bool AnonymizePlayers
+        {
+            get { return _anonymizePlayers; }
+            set { CallerSetProperty(ref _anonymizePlayers, value); OnAnonymizePlayersChanged?.Invoke(this, EventArgs.Empty); }
+        }
+
+        bool _requestingUserInput;
+        public bool RequestingUserInput
+        {
+            get { return _requestingUserInput; }
+            set { CallerSetProperty(ref _requestingUserInput, value); }
+        }
+
+        RequestUserInputViewModel _requestInputVM;
+        public RequestUserInputViewModel RequestInputVM
+        {
+            get { return _requestInputVM; }
+            set { CallerSetProperty(ref _requestInputVM, value); }
+        }
+
+        public bool IsZanverseSplit
+        {
+            get { return DamageTypesSettings.SplitZanverse; }
+        }
+
+        public event EventHandler OnAnonymizePlayersChanged;
+
         private GraphPlayerTabVM selfPlayerTab = null;
         private AllPlayersTabViewModel allPlayersTab = null;
         private Dictionary<PSO2Player, GraphPlayerTabVM> playerTabDict = new Dictionary<PSO2Player, GraphPlayerTabVM>();
         private object tabManipulationLock = new object();
-        private HotkeyUtil hotkeyUtil = new HotkeyUtil();
+        private HotkeyUtil hotkeyUtil;
 
         public MainWindowViewModel()
         {
+            hotkeyUtil = new HotkeyUtil(App.Current.MainWindow); //MainWindow should be MainWindow.xaml, per ms documentation
+            OnAnonymizePlayersChanged += MainWindowViewModel_OnAnonymizePlayersChanged;
             App.Current.Exit += Current_Exit;
             SettingsVM = new SettingsViewModel();
+            SettingsVM.OnAutoEndSessionChanged += SettingsVM_OnAutoEndSessionChanged;
             OpacityVM = new WindowOpacityVM(SettingsVM);
+            RequestInputVM = new RequestUserInputViewModel("Seconds before session auto-ends");
+            RequestInputVM.UserInputAccepted += RequestInputVM_UserInputAccepted;
+            RequestInputVM.ValidateUserInput += RequestInputVM_ValidateUserInput;
+            RequestInputVM.OnCancelled += RequestInputVM_OnCancelled;
 
             UpdateDamageLogsCommand = new RelayCommand<object>((_) => selectDamageLogsPath());
             ResetTrackerCommand = new RelayCommand<object>((_) => resetParser());
@@ -155,6 +199,7 @@ namespace ApexParse.ViewModel
             SetBackgroundImageCommand = new RelayCommand<object>((_) => setBackgroundImage());
             OpenSessionLogsCommand = new RelayCommand<object>((_) => openSessionLogsFolder());
             ExitCommand = new RelayCommand<object>((_) => App.Current.Shutdown());
+            ChangeAutoEndTimeoutCommand = new RelayCommand<object>((_) => changeAutoEndTimeout());
 
             if (string.IsNullOrWhiteSpace(Settings.Default.DamageLogsPath))
             {
@@ -164,11 +209,8 @@ namespace ApexParse.ViewModel
 
             if (CurrentDamageParser == null)
             {
-                CurrentDamageParser = new DamageParser(Settings.Default.DamageLogsPath);
-                updateTrackersToSum();
+                initializeDamageParser(Settings.Default.DamageLogsPath);
             }
-            CurrentDamageParser.UpdateTick += Parser_UpdateTick;
-            CurrentDamageParser.NewSessionStarted += CurrentDamageParser_NewSessionStarted;
             try
             {
                 CurrentDamageParser.Start(TimeSpan.FromSeconds(Settings.Default.ParserTickRate));
@@ -189,16 +231,74 @@ namespace ApexParse.ViewModel
             StatusBarText = $"Welcome to ApexParse v{App.VersionString}";
         }
 
+        private void SettingsVM_OnAutoEndSessionChanged(object sender, EventArgs e)
+        {
+            CurrentDamageParser.AutoEndSession = SettingsVM.AutoEndSession;
+        }
+
+        private void CurrentDamageParser_AutoEndSessionEvent(object sender, EventArgs e)
+        {
+            App.Current.Dispatcher.BeginInvoke(new Action(() => saveSession()));
+        }
+
+        private void RequestInputVM_OnCancelled(object sender, EventArgs e)
+        {
+            RequestingUserInput = false;
+            Console.WriteLine("Cancelled!");
+        }
+
+        private void RequestInputVM_ValidateUserInput(object sender, ValidateInputEventArgs e)
+        {
+            double val;
+            if (!double.TryParse(e.TextToValidate, out val))
+            {
+                MessageBox.Show("Input must be in seconds");
+                return;
+            }
+            if (val < 5)
+            {
+                MessageBox.Show("Minimum seconds is 5, enter a number greater than 5");
+                return;
+            }
+            Console.WriteLine("validation success!");
+            e.ValidationSucceeded = true;
+        }
+
+        private void RequestInputVM_UserInputAccepted(object sender, EventArgs e)
+        {
+            //only time we use this for now is to handle setting timeout for now
+            TimeSpan newTimeout = TimeSpan.FromSeconds(double.Parse(RequestInputVM.UserInput));
+            Settings.Default.AutoEndSessionTimeout = newTimeout;
+            Console.WriteLine($"Setting timeout to {newTimeout}");
+            CurrentDamageParser.AutoEndTimeout = newTimeout;
+            RequestingUserInput = false;
+        }
+
+        private void changeAutoEndTimeout()
+        {
+            if (RequestingUserInput) return;
+            RequestInputVM.UserInput = Settings.Default.AutoEndSessionTimeout.TotalSeconds.ToString();
+            RequestingUserInput = true;
+            Console.WriteLine("Changing auto end timeout...");
+        }
+
+        private void MainWindowViewModel_OnAnonymizePlayersChanged(object sender, EventArgs e)
+        {
+            CurrentDamageParser?.SetNameAnonimization(AnonymizePlayers);
+        }
+
         private void Current_Exit(object sender, System.Windows.ExitEventArgs e)
         {
             Console.WriteLine("Saving settings");
-            Settings.Default.SeparateZanverse = SeparateZanverse;
             Settings.Default.HighlightDPS = HighlightDPS;
             Settings.Default.BackgroundImagePath = BackgroundImagePath == null ? string.Empty : BackgroundImagePath;
             Settings.Default.EnabledLineSeries = LineSeriesSettings.GetEnumValue().ToString();
             Settings.Default.DetailedDamageVisibleColumns = DetailedDamageVisibleSettings.GetEnum().ToString();
+            Settings.Default.HiddenDamageTypes = DamageTypesSettings.GetHiddenTrackersEnum().ToString();
+            Settings.Default.SplitDamageTypes = DamageTypesSettings.GetSeparatedTrackersEnum(false).ToString();
             Settings.Default.ShortenDPSReadout = ShortenDPSReadout;
             Settings.Default.OpenGraphForSelf = OpenGraphForSelfAutomatically;
+            Settings.Default.AnonymizePlayers = AnonymizePlayers;
             SettingsVM.SaveSettings();
             Settings.Default.Save();
             Console.WriteLine("Settings saved");
@@ -206,21 +306,40 @@ namespace ApexParse.ViewModel
 
         private void loadSettings()
         {
-            SeparateZanverse = Settings.Default.SeparateZanverse;
             HighlightDPS = Settings.Default.HighlightDPS;
             ShortenDPSReadout = Settings.Default.ShortenDPSReadout;
             OpenGraphForSelfAutomatically = Settings.Default.OpenGraphForSelf;
+            AnonymizePlayers = Settings.Default.AnonymizePlayers;
             EnabledLineSeries val = EnabledLineSeries.All;
             DetailedDamageVisibleColumns val2 = DetailedDamageVisibleColumns.All;
+            PSO2DamageTrackers hiddenTrackers = PSO2DamageTrackers.None;
+            PSO2DamageTrackers splitTrackers = PSO2DamageTrackers.None;
             if (!Enum.TryParse<EnabledLineSeries>(Settings.Default.EnabledLineSeries, out val)) val = EnabledLineSeries.All;
             if (!Enum.TryParse<DetailedDamageVisibleColumns>(Settings.Default.DetailedDamageVisibleColumns, out val2)) val2 = DetailedDamageVisibleColumns.All;
+            if (!Enum.TryParse<PSO2DamageTrackers>(Settings.Default.HiddenDamageTypes, out hiddenTrackers)) hiddenTrackers = PSO2DamageTrackers.None;
+            if (!Enum.TryParse<PSO2DamageTrackers>(Settings.Default.SplitDamageTypes, out splitTrackers)) splitTrackers = PSO2DamageTrackers.None;
             if (!string.IsNullOrWhiteSpace(Settings.Default.BackgroundImagePath))
             {
                 BackgroundImagePath = Settings.Default.BackgroundImagePath;
             }
             LineSeriesSettings = new EnabledLineSeriesSettingsVM(val);
             DetailedDamageVisibleSettings = new ColumnVisibilityVM(val2);
+            DamageTypesSettings = new HiddenSplitTypesSettingsVM(splitTrackers, hiddenTrackers);
+            DamageTypesSettings.HideSettingsChanged += DamageTypesSettings_HideSettingsChanged;
+            DamageTypesSettings.SplitSettingsChanged += DamageTypesSettings_SplitSettingsChanged;
             LineSeriesSettings.SeriesEnabledStateChangedEvent += LineSeriesSettings_SeriesEnabledStateChangedEvent;
+        }
+
+        private void DamageTypesSettings_SplitSettingsChanged(object sender, EventArgs e)
+        {
+            var newSetting = DamageTypesSettings.GetSeparatedTrackersEnum(true);
+            CurrentDamageParser.SetTrackersToSumInTotalDamage(newSetting);
+        }
+
+        private void DamageTypesSettings_HideSettingsChanged(object sender, EventArgs e)
+        {
+            var newSetting = DamageTypesSettings.GetHiddenTrackersEnum();
+            CurrentDamageParser.SetTrackersToHide(newSetting);
         }
 
         private void LineSeriesSettings_SeriesEnabledStateChangedEvent(object sender, EventArgs e)
@@ -248,8 +367,21 @@ namespace ApexParse.ViewModel
 
         private void initializeHotkeys()
         {
-            hotkeyUtil.RegisterHotkey(new KeyContainer(Keys.R, true, true, (_) => { resetParser(); }));     //CTRL + SHIFT + R
-            hotkeyUtil.RegisterHotkey(new KeyContainer(Keys.E, true, true, (_) => { saveSession(); }));     //CTRL + SHIFT + E
+            if (!hotkeyUtil.RegisterHotkey(new HotkeyUtil.KeyContainer(Keys.R, true, true, (_) => { resetParser(); }))) //CTRL + SHIFT + R
+            {
+                warnHotkeysInitialized();
+                return;
+            }
+            if (!hotkeyUtil.RegisterHotkey(new HotkeyUtil.KeyContainer(Keys.E, true, true, (_) => { saveSession(); }))) //CTRL + SHIFT + E
+            {
+                warnHotkeysInitialized();
+                return;
+            }
+        }
+
+        private void warnHotkeysInitialized()
+        {
+            MessageBox.Show("Unable to register hotkeys, is ApexParse already running?");
         }
 
         private void saveSession()
@@ -267,8 +399,7 @@ namespace ApexParse.ViewModel
             if (SettingsVM.RenderWindow)
             {
                 SaveToImagePath = Path.ChangeExtension(reportPath, "jpg");
-                RenderNow = true;
-                RenderNow = false;
+                RenderNowRelay.Execute(); //lmao
             }
 
             StatusBarText += $" | Session Saved!";
@@ -353,12 +484,12 @@ namespace ApexParse.ViewModel
 
                 foreach (var player in CurrentDamageParser.Players) //add
                 {
-                    if (DamageParser.IsBlacklistedUsername(player.Value.Name)) continue; //skip blacklisted
-                    if (!playerTabDict.ContainsKey(player.Value))
+                    if (DamageParser.IsBlacklistedUsername(player.Name)) continue; //skip blacklisted
+                    if (!playerTabDict.ContainsKey(player))
                     {
-                        var newTab = new GraphPlayerTabVM(this, DetailedDamageVisibleSettings, player.Value);
+                        var newTab = new GraphPlayerTabVM(this, DetailedDamageVisibleSettings, player);
                         AllTabs.Add(newTab);
-                        playerTabDict.Add(player.Value, newTab);
+                        playerTabDict.Add(player, newTab);
                         newTab.SetEnabledLineSeries(LineSeriesSettings.GetEnumValue());
                     }
                 }
@@ -366,7 +497,7 @@ namespace ApexParse.ViewModel
                 List<GraphPlayerTabVM> toRemove = new List<GraphPlayerTabVM>(); //remove
                 foreach (var tab in AllTabs.Where(t => t is GraphPlayerTabVM).Cast<GraphPlayerTabVM>())
                 {
-                    if (!CurrentDamageParser.Players.ContainsKey(tab.Player.ID)) toRemove.Add(tab);
+                    if (!CurrentDamageParser.DoesPlayerIdExist(tab.Player.ID)) toRemove.Add(tab);
                 }
                 foreach (var rem in toRemove)
                 {
@@ -385,14 +516,26 @@ namespace ApexParse.ViewModel
                 {
                     Settings.Default.DamageLogsPath = dialog.SelectedPath;
                     Settings.Default.Save();
-                    CurrentDamageParser = new DamageParser(dialog.SelectedPath);
-                    CurrentDamageParser.NewSessionStarted += CurrentDamageParser_NewSessionStarted;
-                    updateTrackersToSum();
+                    initializeDamageParser(dialog.SelectedPath);
                     return true;
                 }
             }
 
             return false;
+        }
+
+        void initializeDamageParser(string logPath)
+        {
+            CurrentDamageParser = new DamageParser(Settings.Default.DamageLogsPath);
+            CurrentDamageParser.SetTrackersToSumInTotalDamage(DamageTypesSettings.GetSeparatedTrackersEnum(true));
+            CurrentDamageParser.SetTrackersToHide(DamageTypesSettings.GetHiddenTrackersEnum());
+            CurrentDamageParser.SetNameAnonimization(AnonymizePlayers);
+            CurrentDamageParser.AutoEndSession = Settings.Default.AutoEndSession;
+            CurrentDamageParser.AutoEndTimeout = Settings.Default.AutoEndSessionTimeout;
+            CurrentDamageParser.UpdateTick += Parser_UpdateTick;
+            CurrentDamageParser.NewSessionStarted += CurrentDamageParser_NewSessionStarted;
+            CurrentDamageParser.AutoEndSessionEvent += CurrentDamageParser_AutoEndSessionEvent;
+            
         }
 
         private void setBackgroundImage()
@@ -435,23 +578,6 @@ namespace ApexParse.ViewModel
                     }
                 }
             }
-        }
-
-        private void updateTrackersToSum()
-        {
-            if (SeparateZanverse)
-            {
-                CurrentDamageParser?.SetTrackersToSumInTotalDamage(PSO2DamageTrackers.All & ~PSO2DamageTrackers.Zanverse);
-            }
-            else
-            {
-                CurrentDamageParser?.SetTrackersToSumInTotalDamage(PSO2DamageTrackers.All);
-            }
-        }
-
-        private void onSeparateZanverseChanged()
-        {
-            updateTrackersToSum();
         }
 
         private void onShortenDPSChanged()

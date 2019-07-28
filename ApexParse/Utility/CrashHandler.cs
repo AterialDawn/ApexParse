@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -19,6 +20,7 @@ namespace ApexParse.Utility
         private static bool _initialized = false;
         public static void Initialize()
         {
+            if (Debugger.IsAttached) return; //let the debugger do its thing
             if (_initialized) return;
             _initialized = true;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;

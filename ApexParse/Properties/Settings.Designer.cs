@@ -298,5 +298,65 @@ namespace ApexParse.Properties {
                 this["RenderWindow"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool AnonymizePlayers {
+            get {
+                return ((bool)(this["AnonymizePlayers"]));
+            }
+            set {
+                this["AnonymizePlayers"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("None")]
+        public string SplitDamageTypes {
+            get {
+                return ((string)(this["SplitDamageTypes"]));
+            }
+            set {
+                this["SplitDamageTypes"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("None")]
+        public string HiddenDamageTypes {
+            get {
+                return ((string)(this["HiddenDamageTypes"]));
+            }
+            set {
+                this["HiddenDamageTypes"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool AutoEndSession {
+            get {
+                return ((bool)(this["AutoEndSession"]));
+            }
+            set {
+                this["AutoEndSession"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("00:00:10")]
+        public global::System.TimeSpan AutoEndSessionTimeout {
+            get {
+                return ((global::System.TimeSpan)(this["AutoEndSessionTimeout"]));
+            }
+            set {
+                this["AutoEndSessionTimeout"] = value;
+            }
+        }
     }
 }

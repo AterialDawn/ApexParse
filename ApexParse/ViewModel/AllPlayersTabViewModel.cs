@@ -98,7 +98,12 @@ namespace ApexParse.ViewModel
                 int val = second.TotalDamage.CompareTo(first.TotalDamage);
                 if (val == 0)
                 {
-                    return second.Name.CompareTo(first.Name);
+                    int val2 = second.AssociatedPlayer.Name.CompareTo(first.AssociatedPlayer.Name); //compare by real name to avoid anonymizeplayers feature crash
+                    if (val2 == 0)
+                    {
+                        return second.AssociatedPlayer.ID.CompareTo(first.AssociatedPlayer.ID);
+                    }
+                    else return val2;
                 }
                 else
                 {
@@ -114,18 +119,18 @@ namespace ApexParse.ViewModel
         private void ensureParserState()
         {
             //Add missing players to AllPlayers
-            foreach (var curItemKVP in parser.Players)
+            foreach (var curItem in parser.Players)
             {
-                if (!AllPlayers.Select(p => p.AssociatedPlayer).Contains(curItemKVP.Value))
+                if (!AllPlayers.Select(p => p.AssociatedPlayer).Contains(curItem))
                 {
-                    if (DamageParser.IsBlacklistedUsername(curItemKVP.Value.Name)) continue;
-                    AllPlayers.Add(new AllPlayersTabPlayerVM(parent, curItemKVP.Value));
+                    if (DamageParser.IsBlacklistedUsername(curItem.Name)) continue;
+                    AllPlayers.Add(new AllPlayersTabPlayerVM(parent, curItem));
                 }
             }
 
-            if (parent.SeparateZanverse)
+            if (parent.IsZanverseSplit)
             {
-                if (zanversePlayerVM == null)
+                if (zanversePlayerVM == null && parser.ZanversePlayer != null) //can be null if zanverse is hidden
                 {
                     zanversePlayerVM = new AllPlayersTabPlayerVM(parent, parser.ZanversePlayer);
                     AllPlayers.Add(zanversePlayerVM);
