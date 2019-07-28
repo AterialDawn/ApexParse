@@ -191,7 +191,7 @@ namespace ApexParse.ViewModel
             RequestInputVM.ValidateUserInput += RequestInputVM_ValidateUserInput;
             RequestInputVM.OnCancelled += RequestInputVM_OnCancelled;
 
-            UpdateDamageLogsCommand = new RelayCommand<object>((_) => selectDamageLogsPath());
+            UpdateDamageLogsCommand = new RelayCommand<object>((_) => selectDamageLogsPath(true));
             ResetTrackerCommand = new RelayCommand<object>((_) => resetParser());
             SaveSessionCommand = new RelayCommand<object>((_) => saveSession());
             ReselectDamageLogsCommand = new RelayCommand<object>((_) => reselectDamageLogs());
@@ -203,7 +203,7 @@ namespace ApexParse.ViewModel
 
             if (string.IsNullOrWhiteSpace(Settings.Default.DamageLogsPath))
             {
-                selectDamageLogsPath();
+                selectDamageLogsPath(false);
             }
             loadSettings();
 
@@ -358,7 +358,7 @@ namespace ApexParse.ViewModel
 
         private void reselectDamageLogs()
         {
-            if (selectDamageLogsPath())
+            if (selectDamageLogsPath(true))
             {
                 MessageBox.Show("ApexParse must now be restarted.", "Restart Needed", MessageBoxButtons.OK);
                 App.Current.Shutdown();
@@ -507,7 +507,7 @@ namespace ApexParse.ViewModel
             }
         }
         
-        private bool selectDamageLogsPath()
+        private bool selectDamageLogsPath(bool initializeParser)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
@@ -516,7 +516,7 @@ namespace ApexParse.ViewModel
                 {
                     Settings.Default.DamageLogsPath = dialog.SelectedPath;
                     Settings.Default.Save();
-                    initializeDamageParser(dialog.SelectedPath);
+                    if(initializeParser) initializeDamageParser(dialog.SelectedPath);
                     return true;
                 }
             }

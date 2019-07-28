@@ -174,7 +174,7 @@ namespace ApexParse
 
         private string getLatestLogFile()
         {
-            return Directory.GetFiles(monitoredFolder).Where(f => Regex.IsMatch(f, @"\d+\.csv")).OrderByDescending(f => long.Parse(f)).First();
+            return Directory.GetFiles(monitoredFolder).Where(f => Regex.IsMatch(f, @"\d+\.csv")).OrderByDescending(f => long.Parse(Path.GetFileNameWithoutExtension(f))).First();
         }
 
         private void internalReset()
