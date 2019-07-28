@@ -57,6 +57,7 @@ namespace ApexParse
         private PSO2DamageTrackers trackersToSum;
         private DamageParser parent;
 
+        bool shouldAnonymizeName = true;
         public bool IsAlly
         {
             get
@@ -95,10 +96,11 @@ namespace ApexParse
             Parent_NameAnonimizationChangedEvent(null, null);
         }
 
-        public void SetSpecialPlayer(bool isSpecial)
+        public void SetSpecialPlayer(bool isSpecial, bool anonymizeName)
         {
             IsSpecialPlayer = isSpecial;
-            if (isSpecial) Name = actualName;
+            shouldAnonymizeName = anonymizeName;
+            if (isSpecial && !anonymizeName) Name = actualName;
             else updateName();
         }
 
@@ -115,9 +117,13 @@ namespace ApexParse
                 {
                     Name = "You";
                 }
-                else if (!IsSpecialPlayer)
+                else if (shouldAnonymizeName)
                 {
                     Name = "-";
+                }
+                else
+                {
+                    Name = actualName;
                 }
             }
             else

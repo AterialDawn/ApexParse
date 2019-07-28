@@ -174,7 +174,7 @@ namespace ApexParse
 
         private string getLatestLogFile()
         {
-            return Directory.GetFiles(monitoredFolder).Where(f => Regex.IsMatch(f, @"\d+\.csv")).OrderByDescending(f => f).First();
+            return Directory.GetFiles(monitoredFolder).Where(f => Regex.IsMatch(f, @"\d+\.csv")).OrderByDescending(f => long.Parse(f)).First();
         }
 
         private void internalReset()
@@ -242,7 +242,7 @@ namespace ApexParse
                         if (ZanversePlayer == null)
                         {
                             ZanversePlayer = new PSO2Player("Zanverse", long.MaxValue, updateClock, InstanceUpdateHistoryDuration, PSO2DamageTrackers.Zanverse, this);
-                            ZanversePlayer.SetSpecialPlayer(true);
+                            ZanversePlayer.SetSpecialPlayer(true, false);
                         }
                         ZanversePlayer.AddZanverseDamageInstance(instance);
                     }
@@ -405,7 +405,7 @@ namespace ApexParse
                 {
                     if (parser.trackersToSuppress.HasFlag(tracker)) return; //do nothing if tracker is suppressed
                     var player = new PSO2Player($"{name} | {nameSuffix}", id, updateInterval, parser.InstanceUpdateHistoryDuration, tracker, parser);
-                    player.SetSpecialPlayer(true);
+                    player.SetSpecialPlayer(true, true);
                     playerTrackerDict.Add(tracker, player);
                     Players.Add(player);
                 }
