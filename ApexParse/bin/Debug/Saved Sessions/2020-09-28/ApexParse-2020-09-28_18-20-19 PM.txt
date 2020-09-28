@@ -1,0 +1,22 @@
+ApexParse Summary Generated on Monday, September 28, 2020 6:20:51 PM0:00:30 | Total Damage : 211,679 | Total DPS : 7,299.28
+
+
+[ Overview ]
+
+> Elin
+> Contrib : 100.00% dmg	|	Dealt : 211,679	|	Taken : 722	|	7,299.28 DPS	|	JA : 68.97%	|	Crit : 89.66%	|	Max : 68,182 (Dodge Counter Shot (Assault Rifle))
+
+[ Elin - 100.00% - 211,679 dmg ]
+34.88% | Samegid (73,828 dmg)
+       |   JA : 72.22% - Crit : 94.44%
+       |   18 hits - 2,578 min, 4,101.56 avg, 11,397 max
+32.21% | Dodge Counter Shot (Assault Rifle) (68,182 dmg)
+       |   JA : 100.00% - Crit : 00.00%
+       |   1 hits - 68,182 min, 68,182.00 avg, 68,182 max
+23.85% | Rafoie (50,479 dmg)
+       |   JA : 55.56% - Crit : 88.89%
+       |   9 hits - 4,450 min, 5,608.78 avg, 6,364 max
+09.07% | Assault Rifle hit (Phantom) (19,190 dmg)
+       |   JA : 100.00% - Crit : 100.00%
+       |   1 hits - 19,190 min, 19,190.00 avg, 19,190 max
+

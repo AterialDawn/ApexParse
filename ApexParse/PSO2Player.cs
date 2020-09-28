@@ -28,6 +28,8 @@ namespace ApexParse
 
         public DamageTracker LaconiumDamage { get; private set; }
 
+        public DamageTracker StatusDamage { get; private set; }
+
         public DamageTracker HeroTimeFinishDamage { get; private set; }
 
         public DamageTracker DamageTaken { get; private set; }
@@ -90,9 +92,10 @@ namespace ApexParse
             RideroidDamage = new DamageTracker(updateClock, instanceHistoryDuration, "Ride"); FilteredDamage.RegisterTracker(RideroidDamage, PSO2DamageTrackers.Ride);
             LaconiumDamage = new DamageTracker(updateClock, instanceHistoryDuration, "Lsw"); FilteredDamage.RegisterTracker(LaconiumDamage, PSO2DamageTrackers.LSW);
             HeroTimeFinishDamage = new DamageTracker(updateClock, instanceHistoryDuration, "HTF"); FilteredDamage.RegisterTracker(HeroTimeFinishDamage, PSO2DamageTrackers.HTF);
+            StatusDamage = new DamageTracker(updateClock, instanceHistoryDuration, "Status"); FilteredDamage.RegisterTracker(StatusDamage, PSO2DamageTrackers.Burn);
             DamageTaken = new DamageTracker(updateClock, instanceHistoryDuration, "Taken");
 
-            allTrackers.AddRange(new[] { BasicDamage, ZanverseDamage, DarkBlastDamage, AISDamage, DamageTaken, PhotonDamage, RideroidDamage, LaconiumDamage, HeroTimeFinishDamage }); //to simplify calls below...
+            allTrackers.AddRange(new[] { BasicDamage, ZanverseDamage, DarkBlastDamage, AISDamage, DamageTaken, PhotonDamage, RideroidDamage, LaconiumDamage, HeroTimeFinishDamage, StatusDamage }); //to simplify calls below...
             Parent_NameAnonimizationChangedEvent(null, null);
         }
 
@@ -212,6 +215,12 @@ namespace ApexParse
                     HeroTimeFinishDamage.AddDamage(instance);
 
                     if (trackersToSum.HasFlag(PSO2DamageTrackers.HTF)) AddAttackInfo(instance);
+                }
+                else if (instance.IsStatusDamage)
+                {
+                    StatusDamage.AddDamage(instance);
+
+                    if (trackersToSum.HasFlag(PSO2DamageTrackers.Burn)) AddAttackInfo(instance);
                 }
                 else if (instance.IsPhotonDamage)
                 {

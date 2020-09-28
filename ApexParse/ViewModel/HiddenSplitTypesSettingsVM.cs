@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Navigation;
 
 namespace ApexParse.ViewModel
 {
@@ -107,6 +108,23 @@ namespace ApexParse.ViewModel
             set { CallerSetProperty(ref _hideZanverse, value); onHideChanged(); }
         }
 
+        bool _splitStatus;
+
+        public bool SplitStatus
+        {
+            get { return _splitStatus; }
+            set { CallerSetProperty(ref _splitStatus, value); onSplitChanged(); }
+
+        }
+
+        bool _hideStatus;
+
+        public bool HideStatus
+        {
+            get { return _hideStatus; }
+            set { CallerSetProperty(ref _hideStatus, value); onHideChanged(); }
+        }
+
         public event EventHandler SplitSettingsChanged;
         public event EventHandler HideSettingsChanged;
 
@@ -119,6 +137,7 @@ namespace ApexParse.ViewModel
             SplitLSW = separatedTrackers.HasFlag(PSO2DamageTrackers.LSW);
             SplitRide = separatedTrackers.HasFlag(PSO2DamageTrackers.Ride);
             SplitZanverse = separatedTrackers.HasFlag(PSO2DamageTrackers.Zanverse);
+            SplitStatus = separatedTrackers.HasFlag(PSO2DamageTrackers.Burn);
 
             HideAIS = hiddenTrackers.HasFlag(PSO2DamageTrackers.AIS);
             HideDB = hiddenTrackers.HasFlag(PSO2DamageTrackers.DarkBlast);
@@ -127,6 +146,7 @@ namespace ApexParse.ViewModel
             HideLSW = hiddenTrackers.HasFlag(PSO2DamageTrackers.LSW);
             HideRide = hiddenTrackers.HasFlag(PSO2DamageTrackers.Ride);
             HideZanverse = hiddenTrackers.HasFlag(PSO2DamageTrackers.Zanverse);
+            HideStatus = hiddenTrackers.HasFlag(PSO2DamageTrackers.Burn);
         }
 
         public PSO2DamageTrackers GetSeparatedTrackersEnum(bool passToParser)
@@ -139,6 +159,8 @@ namespace ApexParse.ViewModel
             retVal |= AddFlagInvert(SplitLSW, PSO2DamageTrackers.LSW, passToParser);
             retVal |= AddFlagInvert(SplitRide, PSO2DamageTrackers.Ride, passToParser);
             retVal |= AddFlagInvert(SplitZanverse, PSO2DamageTrackers.Zanverse, passToParser);
+            retVal |= AddFlagInvert(SplitStatus, PSO2DamageTrackers.Burn, passToParser);
+            retVal |= AddFlagInvert(SplitStatus, PSO2DamageTrackers.Poison, passToParser);
             if (passToParser)
             {
                 retVal |= PSO2DamageTrackers.Basic; //parser takes this as a bitfield of trackers to COMBINE, since we wanna split, we invert to indicate that we wanna separate this one
@@ -156,6 +178,8 @@ namespace ApexParse.ViewModel
             retVal |= AddFlag(HideLSW, PSO2DamageTrackers.LSW);
             retVal |= AddFlag(HideRide, PSO2DamageTrackers.Ride);
             retVal |= AddFlag(HideZanverse, PSO2DamageTrackers.Zanverse);
+            retVal |= AddFlag(HideStatus, PSO2DamageTrackers.Burn);
+            retVal |= AddFlag(HideStatus, PSO2DamageTrackers.Poison);
             return retVal;
         }
 

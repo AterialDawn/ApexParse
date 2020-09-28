@@ -87,6 +87,7 @@
                             <MenuItem Header="Photon Weapons" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.SplitPWP}" />
                             <MenuItem Header="Rideroid" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.SplitRide}" />
                             <MenuItem Header="Zanverse" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.SplitZanverse}" />
+                            <MenuItem Header="Status(Burn/Poison)" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.SplitStatus}" />
                         </MenuItem>
                         <MenuItem Header="Hide Damage Types..." IsEnabled="{Binding IsParsingInactive}">
                             <MenuItem Header="AIS" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.HideAIS}" />
@@ -96,6 +97,7 @@
                             <MenuItem Header="Photon Weapons" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.HidePWP}" />
                             <MenuItem Header="Rideroid" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.HideRide}" />
                             <MenuItem Header="Zanverse" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.HideZanverse}" />
+                            <MenuItem Header="Status(Burn/Poison)" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.HideStatus}" />
                         </MenuItem>
                         <MenuItem Header="Visible Lines...">
                             <MenuItem Header="Total Damage Dealt" IsCheckable="True" IsChecked="{Binding LineSeriesSettings.TotalDamageEnabled}" />

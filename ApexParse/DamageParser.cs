@@ -392,6 +392,7 @@ namespace ApexParse
                 wereAnyDispatched |= dispatchInstance(instance.IsLaconiumDamage, PSO2DamageTrackers.LSW, instance, "LSW");
                 wereAnyDispatched |= dispatchInstance(instance.IsPhotonDamage, PSO2DamageTrackers.PWP, instance, "PWP");
                 wereAnyDispatched |= dispatchInstance(instance.IsRideroidDamage, PSO2DamageTrackers.Ride, instance, "Ride");
+                wereAnyDispatched |= dispatchInstance(instance.IsStatusDamage, PSO2DamageTrackers.Burn, instance, "Status");
                 if (!wereAnyDispatched)
                 {
                     CombinedPlayer.AddDamageInstance(instance);
