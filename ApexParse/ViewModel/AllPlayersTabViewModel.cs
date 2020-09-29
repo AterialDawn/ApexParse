@@ -78,7 +78,7 @@ namespace ApexParse.ViewModel
 
         private ListCollectionView createViewSource()
         {
-            var source = CollectionViewSource.GetDefaultView(_allPlayers) as ListCollectionView;
+            var source = new ListCollectionView(_allPlayers);
             source.CustomSort = new CustomSortPlayers();
             return source;
         }

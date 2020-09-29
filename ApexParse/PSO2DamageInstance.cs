@@ -48,6 +48,8 @@ namespace ApexParse
         
         public bool IsLaconiumDamage { get; private set; }
 
+        public bool IsElementalDamage { get; private set; }
+
         public string AttackName { get; private set; }
 
         public TimeSpan RelativeTimestamp { get; private set; }
@@ -91,6 +93,7 @@ namespace ApexParse
             IsPhotonDamage = PSO2AttackNameHelper.IsPhotonAttack(AttackId);
             IsRideroidDamage = PSO2AttackNameHelper.IsRideroidAttack(AttackId);
             IsLaconiumDamage = PSO2AttackNameHelper.IsRideroidAttack(AttackId);
+            IsElementalDamage = PSO2AttackNameHelper.IsElementalDamage(AttackId);
         }
 
         public void ReplaceZanverseName()

@@ -19,6 +19,7 @@ namespace ApexParse
         static List<long> _rideIds = new List<long>();
         static List<long> _darkBlastIds = new List<long>();
         static List<long> _laconiumIds = new List<long>();
+        static List<long> _elemIds = new List<long>();
 
         const string IgnoredSkillsCsv = "ignoredskills.csv";
         const string SkillsCsv = "skills.csv";
@@ -40,6 +41,7 @@ namespace ApexParse
         internal static bool IsRideroidAttack(long id) => _rideIds.Contains(id);
         internal static bool IsDarkBlastAttack(long id) => _darkBlastIds.Contains(id);
         internal static bool IsLaconiumAttack(long id) => _laconiumIds.Contains(id);
+        internal static bool IsElementalDamage(long id) => _elemIds.Contains(id);
         internal static bool IsIgnoredAttackForJA(long id) => _ignoredAttacksForJA.Contains(id);
 
         internal static string GetAttackName(long id)
@@ -185,6 +187,8 @@ namespace ApexParse
                             listToLoad = _darkBlastIds; break;
                         case "laconium":
                             listToLoad = _laconiumIds; break;
+                        case "element":
+                            listToLoad = _elemIds; break;
                     }
                     if (listToLoad != null) loadElementIdsToList(attackElement, listToLoad);
                 }

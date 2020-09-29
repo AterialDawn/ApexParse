@@ -53,6 +53,7 @@ namespace ApexParse
         PSO2DamageInstance lastDamageInstance = null;
         bool hasLogStartTime = false;
         bool resetParserOnNewInstance = false;
+        bool resetQueued = false;
         int damageInstancesQueued = 0;
         string lastOpenedFile = "";
         PSO2DamageTrackers trackersToSum = PSO2DamageTrackers.All;
@@ -146,10 +147,7 @@ namespace ApexParse
 
         public void Reset()
         {
-            lock (updateLock)
-            {
-                internalReset();
-            }
+            resetQueued = true;
         }
 
         public void SetNameAnonimization(bool enabled)
@@ -200,6 +198,11 @@ namespace ApexParse
         {
             lock (updateLock)
             {
+                if (resetQueued)
+                {
+                    resetQueued = false;
+                    internalReset();
+                }
                 if ((DateTime.Now - timeLastLogScanned).TotalSeconds > 10)
                 {
                     timeLastLogScanned = DateTime.Now;
@@ -392,6 +395,7 @@ namespace ApexParse
                 wereAnyDispatched |= dispatchInstance(instance.IsLaconiumDamage, PSO2DamageTrackers.LSW, instance, "LSW");
                 wereAnyDispatched |= dispatchInstance(instance.IsPhotonDamage, PSO2DamageTrackers.PWP, instance, "PWP");
                 wereAnyDispatched |= dispatchInstance(instance.IsRideroidDamage, PSO2DamageTrackers.Ride, instance, "Ride");
+                wereAnyDispatched |= dispatchInstance(instance.IsElementalDamage && !PSO2Player.IsAllyId(instance.TargetId), PSO2DamageTrackers.Elem, instance, "Elem"); //don't split incoming elemental dmg
                 if (!wereAnyDispatched)
                 {
                     CombinedPlayer.AddDamageInstance(instance);
@@ -414,7 +418,7 @@ namespace ApexParse
             bool dispatchInstance(bool isCorrectType, PSO2DamageTrackers tracker, PSO2DamageInstance instance, string nameSuffix)
             {
                 if (!isCorrectType) return false;
-                if (parser.trackersToSuppress.HasFlag(tracker)) return true; //swallow this damage instance if it's suppressed.
+                if (parser.trackersToSuppress.HasFlag(tracker) && (tracker == PSO2DamageTrackers.Elem ? !PSO2Player.IsAllyId(instance.TargetId) : true )) return true; //swallow this damage instance if it's suppressed. If element is hidden, only hide if its outgoing elemental dmg
                 else if (IsSplit(tracker))
                 {
                     if (!playerTrackerDict.ContainsKey(tracker))

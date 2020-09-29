@@ -17,7 +17,8 @@ namespace ApexParse
         PWP         = (1 << 5), //Photon 
         Ride        = (1 << 6), //Rideroid
         LSW         = (1 << 7), //Laconium
-        All = Basic | Zanverse | DarkBlast | AIS | HTF | PWP | Ride | LSW,
+        Elem        = (1 << 8),
+        All = Basic | Zanverse | DarkBlast | AIS | HTF | PWP | Ride | LSW | Elem,
         None = 0
     }
 

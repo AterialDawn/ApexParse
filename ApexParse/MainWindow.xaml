@@ -86,6 +86,7 @@
                             <MenuItem Header="Laconium Sword" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.SplitLSW}" />
                             <MenuItem Header="Photon Weapons" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.SplitPWP}" />
                             <MenuItem Header="Rideroid" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.SplitRide}" />
+                            <MenuItem Header="Status (Burn/Poison)" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.SplitELEM}" />
                             <MenuItem Header="Zanverse" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.SplitZanverse}" />
                         </MenuItem>
                         <MenuItem Header="Hide Damage Types..." IsEnabled="{Binding IsParsingInactive}">
@@ -95,6 +96,7 @@
                             <MenuItem Header="Laconium Sword" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.HideLSW}" />
                             <MenuItem Header="Photon Weapons" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.HidePWP}" />
                             <MenuItem Header="Rideroid" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.HideRide}" />
+                            <MenuItem Header="Status (Burn/Poison)" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.HideELEM}" />
                             <MenuItem Header="Zanverse" IsCheckable="True" IsChecked="{Binding DamageTypesSettings.HideZanverse}" />
                         </MenuItem>
                         <MenuItem Header="Visible Lines...">

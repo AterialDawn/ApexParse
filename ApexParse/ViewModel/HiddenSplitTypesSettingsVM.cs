@@ -44,6 +44,13 @@ namespace ApexParse.ViewModel
             set { CallerSetProperty(ref _splitHtf, value); onSplitChanged(); }
         }
 
+        bool _splitElem;
+        public bool SplitELEM
+        {
+            get { return _splitElem; }
+            set { CallerSetProperty(ref _splitElem, value); onSplitChanged(); }
+        }
+
         bool _hideHtf;
         public bool HideHTF
         {
@@ -93,6 +100,13 @@ namespace ApexParse.ViewModel
             set { CallerSetProperty(ref _hideRide, value); onHideChanged(); }
         }
 
+        bool _hideElem;
+        public bool HideELEM
+        {
+            get { return _hideElem; }
+            set { CallerSetProperty(ref _hideElem, value); onHideChanged(); }
+        }
+
         bool _splitZanverse;
         public bool SplitZanverse
         {
@@ -118,6 +132,7 @@ namespace ApexParse.ViewModel
             SplitPWP = separatedTrackers.HasFlag(PSO2DamageTrackers.PWP);
             SplitLSW = separatedTrackers.HasFlag(PSO2DamageTrackers.LSW);
             SplitRide = separatedTrackers.HasFlag(PSO2DamageTrackers.Ride);
+            SplitELEM = separatedTrackers.HasFlag(PSO2DamageTrackers.Elem);
             SplitZanverse = separatedTrackers.HasFlag(PSO2DamageTrackers.Zanverse);
 
             HideAIS = hiddenTrackers.HasFlag(PSO2DamageTrackers.AIS);
@@ -126,6 +141,7 @@ namespace ApexParse.ViewModel
             HidePWP = hiddenTrackers.HasFlag(PSO2DamageTrackers.PWP);
             HideLSW = hiddenTrackers.HasFlag(PSO2DamageTrackers.LSW);
             HideRide = hiddenTrackers.HasFlag(PSO2DamageTrackers.Ride);
+            HideELEM = hiddenTrackers.HasFlag(PSO2DamageTrackers.Elem);
             HideZanverse = hiddenTrackers.HasFlag(PSO2DamageTrackers.Zanverse);
         }
 
@@ -138,6 +154,7 @@ namespace ApexParse.ViewModel
             retVal |= AddFlagInvert(SplitPWP, PSO2DamageTrackers.PWP, passToParser);
             retVal |= AddFlagInvert(SplitLSW, PSO2DamageTrackers.LSW, passToParser);
             retVal |= AddFlagInvert(SplitRide, PSO2DamageTrackers.Ride, passToParser);
+            retVal |= AddFlagInvert(SplitELEM, PSO2DamageTrackers.Elem, passToParser);
             retVal |= AddFlagInvert(SplitZanverse, PSO2DamageTrackers.Zanverse, passToParser);
             if (passToParser)
             {
@@ -156,6 +173,7 @@ namespace ApexParse.ViewModel
             retVal |= AddFlag(HideLSW, PSO2DamageTrackers.LSW);
             retVal |= AddFlag(HideRide, PSO2DamageTrackers.Ride);
             retVal |= AddFlag(HideZanverse, PSO2DamageTrackers.Zanverse);
+            retVal |= AddFlag(HideELEM, PSO2DamageTrackers.Elem);
             return retVal;
         }
 
