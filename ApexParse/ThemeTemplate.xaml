@@ -66,7 +66,7 @@
     <SolidColorBrush x:Key="BlackColorBrush" Color="{StaticResource BlackColor}" options:Freeze="True" />
 
     <SolidColorBrush x:Key="WindowTitleColorBrush" Color="{StaticResource AccentColor}" options:Freeze="True" />
-    <SolidColorBrush x:Key="NonActiveWindowTitleColorBrush" Color="#808080" options:Freeze="True" />
+    <SolidColorBrush x:Key="NonActiveWindowTitleColorBrush" Color="{StaticResource AccentColor}" options:Freeze="True" />
     <SolidColorBrush x:Key="NonActiveBorderColorBrush" Color="#808080" options:Freeze="True" />
 
     <SolidColorBrush x:Key="HighlightBrush" Color="{StaticResource HighlightColor}" options:Freeze="True" />

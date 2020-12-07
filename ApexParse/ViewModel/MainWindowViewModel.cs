@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ApexParse.ViewModel
@@ -16,6 +17,7 @@ namespace ApexParse.ViewModel
         public DamageParser CurrentDamageParser { get; private set; }
         public SettingsViewModel SettingsVM { get; private set; }
         public WindowOpacityVM OpacityVM { get; private set; }
+        public ClockFormatViewModel ClockFormat { get; private set; }
 
         public RelayCommand<object> UpdateDamageLogsCommand { get; private set; }
         public RelayCommand<object> ResetTrackerCommand { get; private set; }
@@ -158,6 +160,13 @@ namespace ApexParse.ViewModel
             set { CallerSetProperty(ref _requestingUserInput, value); }
         }
 
+        string _currentTimeString;
+        public string CurrentTimeString
+        {
+            get { return _currentTimeString; }
+            set { CallerSetProperty(ref _currentTimeString, value); }
+        }
+
         RequestUserInputViewModel _requestInputVM;
         public RequestUserInputViewModel RequestInputVM
         {
@@ -229,6 +238,25 @@ namespace ApexParse.ViewModel
 
             initializeHotkeys();
             StatusBarText = $"Welcome to ApexParse v{App.VersionString}";
+
+            ClockFormat = new ClockFormatViewModel();
+            UpdateClockTask();
+        }
+
+        private async void UpdateClockTask()
+        {
+            for (; ; )
+            {
+                CurrentTimeString = DateTime.Now.ToString(ClockFormat.FormatString);
+                DateTime n = DateTime.Now.AddSeconds(1);
+                DateTime timeNextUpdateHappens = new DateTime(n.Year, n.Month, n.Day, n.Hour, n.Minute, n.Second);
+                TimeSpan intervalUntilNextUpdate = timeNextUpdateHappens - DateTime.Now;
+
+                if (intervalUntilNextUpdate.TotalMilliseconds >= 0)
+                {
+                    await Task.Delay(intervalUntilNextUpdate);
+                }
+            }
         }
 
         private void SettingsVM_OnAutoEndSessionChanged(object sender, EventArgs e)
@@ -300,6 +328,7 @@ namespace ApexParse.ViewModel
             Settings.Default.OpenGraphForSelf = OpenGraphForSelfAutomatically;
             Settings.Default.AnonymizePlayers = AnonymizePlayers;
             SettingsVM.SaveSettings();
+            ClockFormat.Save();
             Settings.Default.Save();
             Console.WriteLine("Settings saved");
         }

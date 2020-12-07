@@ -147,6 +147,32 @@
             </Button>
         </MW:WindowCommands>
     </MW:MetroWindow.LeftWindowCommands>
+    <MW:MetroWindow.RightWindowCommands>
+        <MW:WindowCommands>
+            <Button>
+                <i:Interaction.Behaviors>
+                    <Behaviors:ContextMenuOnLeftClickBehavior />
+                </i:Interaction.Behaviors>
+                <Button.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Full Date-Time Format" IsChecked="{Binding ClockFormat.FullDateTimeSet}" Command="{Binding ClockFormat.SetFullDateTimeFormat}" />
+                        <MenuItem Header="Long Time Format" IsChecked="{Binding ClockFormat.LongTimeSet}" Command="{Binding ClockFormat.SetLongTimeFormat}" />
+                        <MenuItem Header="Short Time Format" IsChecked="{Binding ClockFormat.ShortTimeSet}" Command="{Binding ClockFormat.SetShortTimeFormat}" />
+                    </ContextMenu>
+                </Button.ContextMenu>
+                <TextBlock Text="{Binding CurrentTimeString}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Setters>
+                                <Setter Property="Margin" Value="0" />
+                                <Setter Property="Foreground" Value="#FFF" />
+                            </Style.Setters>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Button>
+        </MW:WindowCommands>
+    </MW:MetroWindow.RightWindowCommands>
 
     <Grid Background="#333333">
         <Grid.RowDefinitions>
